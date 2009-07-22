@@ -1,5 +1,5 @@
 ;;; -*- mode: emacs-lisp; -*-
-;;; Time-stamp: "2009-07-22 00:25:30 (dennis)"
+;;; Time-stamp: "2009-07-22 13:10:44 (dsuhonin)"
 ;;;
 ;;; TODO: сделать некую систему режимов, аля (i-am-at 'home) или (i-am-at 'mfi)
 ;;;       если работа происходит с файлами в ~/work/mfi/projects, то грузить
@@ -667,6 +667,8 @@ Require `font-lock'."
   (add-hook 'emacs-lisp-mode-hook 'flyspell-prog-mode))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(load-file "~/.emacs.d/elisp.d/prog.el")
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; yaSnippet - yet another snippet extension for Emacs
 (when (require-maybe 'yasnippet)
@@ -902,7 +904,6 @@ Require `font-lock'."
 (add-hook 'emacs-lisp-mode-hook 'negval/emacs-lisp-mode-hook)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; Lisp
 (load-file "~/.emacs.d/elisp.d/lisp.el")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
