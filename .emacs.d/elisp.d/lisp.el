@@ -41,5 +41,3 @@
              slime-complete-symbol-function 'slime-fuzzy-complete-symbol
              slime-net-coding-system 'utf-8-unix)
        )))
-
-(negval/lock-comment-notes 'lisp-mode)
