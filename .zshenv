@@ -23,7 +23,7 @@ esac
 export MACHINE=${machine}
 export PLACEMENT=${placement}
 
-[ -e ${HOME}/.zshenv.prompt ] && . ${HOME}/.zshenv.prompt
+[ -e ${HOME}/.zshenv.local ] && . ${HOME}/.zshenv.local
 
 # More nice colors for ls, don't?
 export CLICOLOR="YES" LSCOLORS="ExGxFxdxCxDxDxhbadExEx"
