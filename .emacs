@@ -1,5 +1,5 @@
 ;;; -*- mode: emacs-lisp; -*-
-;;; Time-stamp: "2009-07-22 18:26:37 (dsuhonin)"
+;;; Time-stamp: "2009-07-27 01:04:10 (dennis)"
 ;;;
 ;;; TODO: сделать некую систему режимов, аля (i-am-at 'home) или (i-am-at 'mfi)
 ;;;       если работа происходит с файлами в ~/work/mfi/projects, то грузить
@@ -871,6 +871,7 @@ Require `font-lock'."
 
 (load-file "~/.emacs.d/elisp.d/c-cxx.el")
 (load-file "~/.emacs.d/elisp.d/emacs-lisp.el")
+(load-file "~/.emacs.d/elisp.d/erlang.el")
 (load-file "~/.emacs.d/elisp.d/haskell.el")
 (load-file "~/.emacs.d/elisp.d/lisp.el")
 (load-file "~/.emacs.d/elisp.d/perl.el")
