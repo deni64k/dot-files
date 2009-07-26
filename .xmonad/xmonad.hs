@@ -77,7 +77,7 @@ myXPConfig = defaultXPConfig
 -- main -----------------------------------------------------------------------
 
 main = do
-       xmobar <- spawnPipe "xmobar ~/.xmobarrc"
+       xmobar <- spawnPipe "xmobar ~/.xmonad/xmobarrc"
        din <- spawnPipe statusBarCmd
        xmonad $ defaultConfig
                   { workspaces = workspaces'
@@ -265,7 +265,9 @@ manageHook' = composeAll
 
   -- bind windows to workspaces
   , className =? "Thunderbird"    --> doF (W.shift "mail")
+  , className =? "Icedove"        --> doF (W.shift "mail")
   , className =? "Firefox"        --> doF (W.shift "www")
+  , className =? "Iceweasel"      --> doF (W.shift "www")
   , className =? "Gajim.py"       --> doF (W.shift "chat")
   , className =? "Sonata"         --> doF (W.shift "music")
   , className =? "xconsole"       --> doF (W.shift "xconsole")
