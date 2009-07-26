@@ -28,7 +28,8 @@ import XMonad.Layout.ResizableTile
 import XMonad.Layout.NoBorders
 
 -- XMonad utils
-import XMonad.Util.Run(spawnPipe)
+import XMonad.Util.EZConfig (mkKeymap, checkKeymap, additionalKeys, additionalKeysP)
+import XMonad.Util.Run (safeSpawn, unsafeSpawn, runInTerm, spawnPipe)
 import XMonad.Prompt
 import XMonad.Prompt.Shell
 
@@ -37,19 +38,37 @@ import XMonad.Actions.WindowGo (runOrRaise)
 
 -- general --------------------------------------------------------------------
 
-backgroundColor = "#ecedee"
+colorOrange          = "#ff7701"
+colorDarkGray        = "#171717"
+colorDodgerBlue      = "#1e90ff"
+colorPink            = "#e3008d"
+colorGreen           = "#00aa4a"
+colorBlue            = "#008dd5"
+colorYellow          = "#fee100"
+colorWhite           = "#cfbfad"
+colorGray5           = "#0d0d0d"
+colorGray95          = "#f2f2f2"
 
-statusBarCmd = "dzen2 -sa c -ta l -bg '" ++ backgroundColor ++ "' -fg '#000000' -w 1600 -fn '-*-terminus-medium-r-normal-*-12-*-*-*-*-*-iso10646-1' -h 16"
+backgroundColor = colorGray5
+foregroundColor = colorGray95
+
+regularFont = "-*-terminus-medium-r-normal-*-12-*-*-*-*-*-*-r"
+xftFont = "terminus:size=8"
+
+statusBarCmd = "~/src/dzen/dzen2"
+               ++ " -bg '" ++ backgroundColor ++ "'"
+               ++ " -fg '" ++ foregroundColor ++ "'"
+               ++ " -fn '" ++ xftFont ++ "'"
+               ++ " -sa c -ta l -w 1600 -h 16"
 
 -- XPConfig options:
 myXPConfig = defaultXPConfig
-    { font              = "-xos4-terminus-medium-r-normal-*-12-*-*-*-c-*-iso10646-1"
+    { font              = regularFont
     , bgColor           = backgroundColor
-    , fgColor           = "#000000"
-    , fgHLight          = "#ffffff"
-    , bgHLight          = "#555753"
-    , borderColor       = "#ede9e3"
-    , promptBorderWidth = 1
+    , fgColor           = foregroundColor
+    , fgHLight          = "#ffa500"
+    , bgHLight          = backgroundColor
+    , promptBorderWidth = 0
     , position          = Bottom
     , height            = 16
     , historySize       = 100
@@ -58,6 +77,7 @@ myXPConfig = defaultXPConfig
 -- main -----------------------------------------------------------------------
 
 main = do
+       xmobar <- spawnPipe "xmobar ~/.xmobarrc"
        din <- spawnPipe statusBarCmd
        xmonad $ defaultConfig
                   { workspaces = workspaces'
@@ -65,14 +85,27 @@ main = do
                   , borderWidth = borderWidth'
                   , normalBorderColor = normalBorderColor'
                   , focusedBorderColor = focusedBorderColor'
---                  , defaultGaps = defaultGaps'
                   , terminal = terminal'
-                  , keys = keys'
-                  , logHook = logHook' din
+                  , keys = \c -> mkKeymap c (keys' c)
+                  , logHook = do logHook' din
+                                 dynamicLogWithPP defaultPP { ppOutput = \e -> hPutStrLn xmobar "" }
                   , layoutHook = layoutHook'
                   , manageHook = manageHook'
                   , mouseBindings = mouseBindings'
+                  , startupHook = return () >> checkKeymap defaultConfig (keys' defaultConfig)
                   }
+                  `additionalKeys`
+                  -- multimedia keys
+                  [ ((0, xK_XF86AudioLowerVolume), unsafeSpawn "mpc volume -2")
+                  , ((0, xK_XF86AudioRaiseVolume), unsafeSpawn "mpc volume +2")
+                  , ((0, xK_XF86AudioMute       ), unsafeSpawn "mymixer --mute")
+                  , ((0, xK_XF86AudioNext       ), unsafeSpawn "mpc next")
+                  , ((0, xK_XF86AudioPrev       ), unsafeSpawn "mpc prev")
+                  , ((0, xK_XF86AudioPlay       ), unsafeSpawn "mpc toggle")
+                  , ((0, xK_XF86AudioStop       ), unsafeSpawn "mpc stop")
+                  , ((0, xK_XF86AudioMedia      ), runOrRaise "sonata" (className =? "Sonata"))
+                  -- make screenshot
+                  , ((0, xK_Print), unsafeSpawn "import -window root $HOME/.tmp/xwd-$(date +%s)$$.png") ]
 
 -- misc -----------------------------------------------------------------------
 
@@ -88,14 +121,11 @@ modMask' :: KeyMask
 modMask' = mod4Mask
 
 borderWidth' :: Dimension
-borderWidth' = 2
+borderWidth' = 1
 
 normalBorderColor', focusedBorderColor' :: String
-normalBorderColor'  = "#cccccc"
-focusedBorderColor' = "#20a020"
-
-defaultGaps' :: [(Int,Int,Int,Int)]
-defaultGaps' = [(16,0,0,0)]
+normalBorderColor'  = backgroundColor
+focusedBorderColor' = "#adff2f"
 
 terminal' :: String
 terminal' = "xterm"
@@ -111,10 +141,41 @@ xK_XF86AudioStop        = 0x1008ff15
 xK_XF86AudioMedia       = 0x1008ff32
 
 -- keys -----------------------------------------------------------------------
-keys' :: XConfig Layout -> M.Map (KeyMask, KeySym) (X ())
-keys' conf@(XConfig {XMonad.modMask = modMask}) = M.fromList $
-  [ ((modMask .|. shiftMask, xK_Return), spawn $ terminal conf)
-  -- keys for Window Navigation hook
+keys' c = [ ("M-S-<Return>", spawn $ XMonad.terminal c)
+          -- run programs
+          , ("M-p"         , shellPrompt myXPConfig)
+          , ("M-S-p"       , prompt (terminal' ++ " -e") myXPConfig)
+          -- adjust current window
+          , ("M-f"         , withFocused $ windows . W.sink)
+          , ("M-c"         , kill)
+          -- switch window
+          , ("M-j"         , windows W.focusUp)
+          , ("M-k"         , windows W.focusDown)
+          -- resizing
+          , ("M-h"         , sendMessage Shrink)
+          , ("M-l"         , sendMessage Expand)
+          , ("M-S-h"       , sendMessage MirrorShrink)
+          , ("M-S-l"       , sendMessage MirrorExpand)
+          -- adjust current layout
+          , ("M-M1-,"      , sendMessage (IncMasterN (-1)))
+          , ("M-M1-."      , sendMessage (IncMasterN 1))
+          -- toggle the status bar gap
+          , ("M-b"         , sendMessage ToggleStruts)
+          -- switch layout
+          , ("M-/"         , sendMessage NextLayout)
+          -- XMonad general
+          , ("M-q"         , restart "xmonad" True)
+          , ("M-S-q"       , io (exitWith ExitSuccess))
+          -- switch workspace
+          , ("M-M1-z"      , prevWS)
+          , ("M-M1-x"      , nextWS)
+          ] ++
+          -- mod-[1..9], Switch to workspace N
+          -- mod-shift-[1..9], Move client to workspace N
+          [ (m ++ k, windows $ f w)
+                | (w, k) <- zip (XMonad.workspaces c) (map show [1..9])
+                , (m, f) <- [("M-",W.greedyView), ("M-S-",W.shift)] ]
+{-
   , ((modMask,               xK_Right       ), sendMessage $ Go R)
   , ((modMask,               xK_Left        ), sendMessage $ Go L)
   , ((modMask,               xK_Up          ), sendMessage $ Go U)
@@ -123,88 +184,28 @@ keys' conf@(XConfig {XMonad.modMask = modMask}) = M.fromList $
   , ((modMask .|. shiftMask, xK_Left        ), sendMessage $ Swap L)
   , ((modMask .|. shiftMask, xK_Up          ), sendMessage $ Swap U)
   , ((modMask .|. shiftMask, xK_Down        ), sendMessage $ Swap D)
-
-  -- run programs
-  , ((modMask,               xK_p           ), shellPrompt myXPConfig)
-  , ((modMask .|. shiftMask, xK_p           ), prompt (terminal' ++ " -e") myXPConfig)
-
-  --
-  , ((modMask,               xK_KP_Multiply ), spawn "mymixer --add 3")
-  , ((modMask,               xK_KP_Divide   ), spawn "mymixer --sub 3")
-
-  -- multimedia keys
-  , ((0,            xK_XF86AudioLowerVolume ), spawn "mpc volume -2")
-  , ((0,            xK_XF86AudioRaiseVolume ), spawn "mpc volume +2")
-  , ((0,            xK_XF86AudioMute        ), spawn "mymixer --mute")
-  , ((0,            xK_XF86AudioNext        ), spawn "mpc next")
-  , ((0,            xK_XF86AudioPrev        ), spawn "mpc prev")
-  , ((0,            xK_XF86AudioPlay        ), spawn "mpc toggle")
-  , ((0,            xK_XF86AudioStop        ), spawn "mpc stop")
-  , ((0,            xK_XF86AudioMedia       ), runOrRaise "sonata" (className =? "Sonata"))
-
-  -- adjust current window
-  , ((modMask,               xK_f           ), withFocused $ windows . W.sink)
-  , ((modMask,               xK_c           ), kill)
-
-  -- switch window
-  , ((modMask,               xK_j           ), windows W.focusUp)
-  , ((modMask,               xK_k           ), windows W.focusDown)
-
-  -- resizing
-  , ((modMask,               xK_h           ), sendMessage Shrink)
-  , ((modMask,               xK_l           ), sendMessage Expand)
-  , ((modMask .|. shiftMask, xK_h           ), sendMessage MirrorShrink)
-  , ((modMask .|. shiftMask, xK_l           ), sendMessage MirrorExpand)
-
-  -- adjust current layout
-  , ((modMask .|. mod1Mask,  xK_comma       ), sendMessage (IncMasterN (-1)))
-  , ((modMask .|. mod1Mask,  xK_period      ), sendMessage (IncMasterN 1))
-
-  -- toggle the status bar gap
-  , ((modMask,               xK_b           ), sendMessage ToggleStruts)
-
-  -- switch layout
-  , ((modMask,               xK_slash       ), sendMessage NextLayout)
-
-  -- switch workspace
-  , ((modMask .|. mod1Mask,  xK_z           ), prevWS)
-  , ((modMask .|. mod1Mask,  xK_x           ), nextWS)
-
-  -- XMonad general
-  , ((modMask,               xK_q           ), restart "/usr/home/dennis/.cabal/bin/xmonad" True)
-  , ((modMask .|. shiftMask, xK_q           ), io (exitWith ExitSuccess))
-  ]
-  ++
-
-  --
-  -- mod-[1..9], Switch to workspace N
-  -- mod-shift-[1..9], Move client to workspace N
-  --
-  [((m .|. modMask, k), windows $ f i)
-        | (i, k) <- zip (XMonad.workspaces conf) [xK_1 .. xK_9]
-        , (f, m) <- [(W.greedyView, 0), (W.shift, shiftMask)]]
-  ++
-
-  --
-  -- mod-{w,e,r}, Switch to physical/Xinerama screens 1, 2, or 3
-  -- mod-shift-{w,e,r}, Move client to screen 1, 2, or 3
-  --
-  [((m .|. modMask, key), screenWorkspace sc >>= flip whenJust (windows . f))
-        | (key, sc) <- zip [xK_w, xK_e, xK_r] [0..]
-        , (f, m)    <- [(W.view, 0), (W.shift, shiftMask)]]
-
+-}
 -- logHook --------------------------------------------------------------------
 
 -- dynamicLog pretty printer for dzen
 pp' din = defaultPP
-            { ppCurrent         = wrap "^bg(#555753)^fg(#ffffff) " " ^fg()^bg()" . \wsId -> if (':' `elem` wsId) then drop 2 wsId else wsId    -- Trim the '[Int]:' from workspace tags
-            , ppVisible         = wrap " " " "                                   . \wsId -> if (':' `elem` wsId) then drop 2 wsId else wsId
-            , ppHidden          = wrap " " " "                                   . \wsId -> if (':' `elem` wsId) then drop 2 wsId else wsId
-            , ppHiddenNoWindows = wrap " " " "                                   . \wsId -> if (':' `elem` wsId) then drop 2 wsId else wsId
-            , ppSep             = " :: "
-            , ppWsSep           = ""
-            , ppLayout          = dzenColor "" ""
-            , ppTitle           = dzenColor "" ""
+            { ppCurrent         = wrap "^bg(#262626)^fg(#1e90ff)[^fg(#ffa500)" "^fg(#1e90ff)]^fg()^bg()"
+            , ppVisible         = wrap "" ""
+            , ppHidden          = wrap "" ""
+            , ppHiddenNoWindows = wrap "" ""
+            , ppSep             = " ^fg(grey60)^r(1x8)^fg() "
+            , ppWsSep           = " "
+            , ppLayout          = dzenColor colorDodgerBlue ""
+                                  . (\x -> case x of
+                                            "Mirror ResizableTall"                      -> pad "^i(/home/dennis/.xmonad/dzen/mtall.xbm)"
+                                            "ResizableTall"                             -> pad "^i(/home/dennis/.xmonad/dzen/tall.xbm)"
+                                            "Full"                                      -> pad "^i(/home/dennis/.xmonad/dzen/full.xbm)"
+                                            "Magnifier GridRatio 1.3333333333333333"    -> pad "^i(/home/dennis/.xmonad/dzen/mgrid.xbm)"
+                                            "GridRatio 1.3333333333333333"              -> pad "^i(/home/dennis/.xmonad/dzen/grid.xbm)"
+                                            "ReflectX Gimp"                             -> pad "^i(/home/dennis/.xmonad/dzen/reflectx.xbm)"
+                                            _                                           -> pad x
+                                    )
+            , ppTitle           = dzenColor foregroundColor ""
             , ppOutput          = hPutStrLn din
             }
 
@@ -227,7 +228,7 @@ tabConfig' = defaultTheme
   , inactiveTextColor = "#000000"
   , urgentTextColor   = "#000000"
 
-  , fontName = "-*-terminus-medium-r-normal-*-12-*-*-*-*-*-iso10646-1"
+  , fontName = "-*-terminus--r-*-*-12-*-*-*-*-*-*-r"
   }
 
 --layoutHook' = configurableNavigation noNavigateBorders $ smartBorders $ layouts
@@ -252,7 +253,6 @@ layouts = avoidStruts
     myTabbed = noBorders(tabbed shrinkText tabConfig')
 -}
 -- manageHook -----------------------------------------------------------------
--- http://www.nntt.org/download.php?id=179
 manageHook' = composeAll
   [
   -- force floating
@@ -261,12 +261,11 @@ manageHook' = composeAll
   , className =? "Gajim.py"       --> doFloat
   , appName   =? "Download"       --> doFloat
   , appName   =? "Dialog"         --> doFloat
+  , appName   =? "xmessage"       --> doFloat
 
   -- bind windows to workspaces
   , className =? "Thunderbird"    --> doF (W.shift "mail")
-  , className =? "Icedove"        --> doF (W.shift "mail")
   , className =? "Firefox"        --> doF (W.shift "www")
-  , className =? "Iceweasel"      --> doF (W.shift "www")
   , className =? "Gajim.py"       --> doF (W.shift "chat")
   , className =? "Sonata"         --> doF (W.shift "music")
   , className =? "xconsole"       --> doF (W.shift "xconsole")

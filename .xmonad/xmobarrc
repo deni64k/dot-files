@@ -1,0 +1,18 @@
+Config { font = "-*-terminus-*-r-*-*-12-*-*-*-*-*-*-u"
+       , bgColor = "#0d0d0d"
+       , fgColor = "#f5f5f5"
+       , position = Bottom
+       , commands = [ Run Weather "UWGG" ["-t","<station>: <tempC>°C","-L","18","-H","25","--normal","#adff2f","--high","red","--low","lightblue"] 36000
+                    , Run Com "mpc" ["status", "--format", "\"%artist% - %title%\""] "music" 20
+                    , Run Network "ale0" ["-L","0","-H","32","--normal","#adff2f","--high","red"] 10
+                    , Run Cpu ["-L","3","-H","50","--normal","#adff2f","--high","red"] 10
+                    , Run Memory ["-t","Mem: <usedratio>%"] 10
+                    , Run Swap [] 10
+                    , Run Com "uname" ["-s","-r"] "" 36000
+                    , Run Date "%a %b %_d %Y %H:%M:%S" "date" 10
+                    , Run StdinReader
+                    ]
+       , sepChar = "%"
+       , alignSep = "}{"
+       , template = "%StdinReader%%cpu% <fc=#404040>|</fc> %memory% <fc=#404040>*</fc> %swap% <fc=#404040>|</fc> %ale0% }{ <fc=#ffa500>%date%</fc> <fc=#404040>|</fc> %music% <fc=#404040>|</fc> %UWGG% <fc=#404040>|</fc> <fc=#1e90ff>%uname%</fc>"
+       }
