@@ -1,3 +1,70 @@
+2009-08-02  Tobias C. Rittweiler  <tcr@freebits.de>
+
+	* swank-backend.lisp (severity [type]): Allow :redefinition.
+
+	* swank-sbcl.lisp (signal-compiler-condition): Tag redefinitions.
+
+	* slime.el (slime-maybe-show-compilation-log): Do not show
+	compilation log if each note describes just a redefinition.
+	(slime-insert-compilation-log): Insert notes indented by 2
+	spaces. Insert some more newlines so the buffer appears more
+	structured.
+	(slime-show-note-counts): Add :redefinition to ecase.
+	(slime-redefinition-note-p): New.
+	(slime-severity-label): Was unused. Adapted to be usable.
+
+2009-07-30  Stas Boukarev  <stassats@gmail.com>
+
+	* doc/slime.texi (Setting up pathname translations): add that it is
+	in the `slime-tramp' contrib.
+
+2009-07-30  Tobias C. Rittweiler  <tcr@freebits.de>
+
+	* swank-clisp.lisp: Clisp 2.48 experimentally supports threads. So
+	add infrastructure to use threads in Clisp's swank backend. We do
+	not make it the default, because it's not prime time yet. There
+	are still problems with GC, weak-pointers, and thread objects.
+
+2009-07-28  Stas Boukarev  <stassats@gmail.com>
+
+	* doc/slime.texi (slime-selector): mention t and c keys.
+
+2009-07-27  Stas Boukarev  <stassats@gmail.com>
+
+	* swank-ccl.lisp (source-note-to-source-location): keys of
+	*temp-file-map* are pathnames, not namestrings; convert
+	namestrings to pathnames before looking up.
+
+2009-07-27  Geo Carncross  <geocar@gmail.com>
+
+	* swank-ecl.lisp: Support for older ECL installs
+	from patch by Mark Evenson
+
+2009-07-26  Helmut Eller  <heller@common-lisp.net>
+
+	* slime.el (slime-maybe-show-compilation-log): New function.
+	(slime-compilation-finished-hook): Use it.  Now that the
+	compilation buffer gets not selected it's more acceptable to
+	display it more often.
+	(slime-insert-compilation-log): Set compilation-skip-threshold to
+	0 and compilation-skip-to-next-location to nil.  Seems to work
+	better for us.
+	(slime-with-popup-buffer): Synch window-point, otherwise it be at
+	the end of the buffer for reused buffers.
+	(slime-display-popup-buffer): Return the window.
+
+2009-07-26  Helmut Eller  <heller@common-lisp.net>
+
+	* swank-sbcl.lisp (tempnam): Muffle efficiency notes.
+
+2009-07-26  Gail Zacharias <gz@clozure.com>
+
+	* swank-ccl.lisp: New file.  An updated version of
+	swank-openmcl.lisp in preparation for a slew of changes to CCL and
+	to honor the new name.
+
+	* swank-loader.lisp (*sysdep-files*): Use it.
+
 2009-07-21  Stas Boukarev  <stassats@gmail.com>
 
 	* slime.el (slime-sexp-at-point-for-macroexpansion): use markers

@@ -1052,7 +1052,9 @@ current state will be saved and later restored."
          (assert (eq (current-buffer) standard-output))
          (setq buffer-read-only t)
          (slime-init-popup-buffer vars%)
-         (slime-display-popup-buffer ,(or select 'nil))))))
+         (set-window-point (slime-display-popup-buffer ,(or select 'nil))
+                           (point))
+         (current-buffer)))))
 
 (put 'slime-with-popup-buffer 'lisp-indent-function 1)
 
@@ -1088,7 +1090,7 @@ can restore it later."
                    (cdr (find new-window old-windows :key #'car)))))
       (when select
         (select-window new-window))
-      (current-buffer))))
+      new-window)))
 
 (defun slime-close-popup-window ()
   (when slime-popup-restore-data
@@ -2652,11 +2654,12 @@ This is only used by the repl command sayoonara."
 The function receive two arguments: the beginning and the end of the 
 region that will be compiled.")
 
-(defcustom slime-compilation-finished-hook 'slime-create-compilation-log
+(defcustom slime-compilation-finished-hook 'slime-maybe-show-compilation-log
   "Hook called with a list of compiler notes after a compilation."
   :group 'slime-mode
   :type 'hook
-  :options '(slime-create-compilation-log
+  :options '(slime-maybe-show-compilation-log
+             slime-create-compilation-log
              slime-show-compilation-log
              slime-maybe-list-compiler-notes
              slime-list-compiler-notes
@@ -2771,10 +2774,10 @@ compile with a debug setting of that number."
   (let ((nerrors 0) (nwarnings 0) (nstyle-warnings 0) (nnotes 0))
     (dolist (note notes)
       (ecase (slime-note.severity note)
-	((:error :read-error) (incf nerrors))
-        (:warning             (incf nwarnings))
-        (:style-warning       (incf nstyle-warnings))
-        (:note                (incf nnotes))))
+	((:error :read-error)           (incf nerrors))
+        ((:warning)                     (incf nwarnings))
+        ((:redefinition :style-warning) (incf nstyle-warnings))
+        ((:note)                        (incf nnotes))))
     (message "%s:%s%s%s%s%s"
              (if successp 
                  "Compilation finished" 
@@ -2931,12 +2934,28 @@ Each newlines and following indentation is replaced by a single space."
 (defun slime-note-has-location-p (note)
   (not (eq ':error (car (slime-note.location note)))))
 
+(defun slime-redefinition-note-p (note)
+  (eq (slime-note.severity note) :redefinition))
+
 (defun slime-create-compilation-log (notes)
   "Create a buffer for `next-error' to use."
   (with-current-buffer (get-buffer-create "*SLIME Compilation*")
     (let ((inhibit-read-only t))
       (erase-buffer))
     (slime-insert-compilation-log notes)))
+
+(defun slime-maybe-show-compilation-log (notes)
+  "Display the log on failed compilations or if NOTES is non-nil."
+  (with-struct (slime-compilation-result. notes duration successp)
+      slime-last-compilation-result
+    (when (or (and notes (not (every #'slime-redefinition-note-p notes)))
+              (not successp))
+      (slime-with-popup-buffer ("*SLIME Compilation*")
+        (slime-insert-compilation-log notes)
+        (let ((inhibit-read-only t))
+          (goto-char (point-max))
+          (insert "\nCompilation " (if successp "succeeded." "failed."))
+          (goto-char (point-min)))))))
 
 (defun slime-show-compilation-log (notes)
   (interactive (list (slime-compiler-notes)))
@@ -2947,16 +2966,18 @@ Each newlines and following indentation is replaced by a single space."
   "Insert NOTES in format suitable for `compilation-mode'."
   (with-temp-message "Preparing compilation log..."
     (compilation-mode)
+    (set (make-local-variable 'compilation-skip-threshold) 0)
+    (set (make-local-variable 'compilation-skip-to-next-location) nil)
     (let ((inhibit-read-only t))
       (insert (format "cd %s\n%d compiler notes:\n" 
                       default-directory (length notes)))
       (dolist (note notes)
-        (insert (format "%s%s:\n%s\n"
+        (insert (format "\n%s%s:\n"
                         (slime-compilation-loc (slime-note.location note))
-                        (substring (symbol-name (slime-note.severity note))
-                                   1)
-                        (slime-note.message note)))))
-    (goto-char (point-min))
+                        (slime-severity-label (slime-note.severity note))))
+        (slime-with-rigid-indentation 2
+          (insert (slime-note.message note))
+          (insert "\n"))))
     (setq next-error-last-buffer (current-buffer))))
 
 (defun slime-compilation-loc (location)
@@ -3002,12 +3023,7 @@ keys."
   (plist-get note :location))
 
 (defun slime-severity-label (severity)
-  (ecase severity
-    (:note "Notes")
-    (:warning "Warnings")
-    (:error "Errors")
-    (:read-error "Read Errors")
-    (:style-warning "Style Warnings")))
+  (subseq (symbol-name severity) 1))
 
 
 ;;;;; Adding a single compiler note

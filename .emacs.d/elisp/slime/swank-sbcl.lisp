@@ -1,4 +1,4 @@
-;;;; -*- Mode: lisp; indent-tabs-mode: nil -*-
+;;;;; -*- Mode: lisp; indent-tabs-mode: nil -*-
 ;;;
 ;;; swank-sbcl.lisp --- SLIME backend for SBCL.
 ;;;
@@ -407,6 +407,7 @@
       (sb-introspect:deftype-lambda-list typespec-operator)
     (if foundp arglist (call-next-method))))
 
+
 (defvar *buffer-name* nil)
 (defvar *buffer-offset*)
 (defvar *buffer-substring* nil)
@@ -435,6 +436,8 @@ information."
            :severity (etypecase condition
                        (sb-c:compiler-error  :error)
                        (sb-ext:compiler-note :note)
+                       (sb-kernel:redefinition-warning
+                                             :redefinition)
                        (style-warning        :style-warning)
                        (warning              :warning)
                        (reader-error         :read-error)
@@ -582,10 +585,14 @@ compiler state."
 ;;;     (compile nil `(lambda () ,(read-from-string string)))
 ;;; did not provide.
 
+(locally (declare (sb-ext:muffle-conditions sb-ext:compiler-note))
+
 (sb-alien:define-alien-routine (#-win32 "tempnam" #+win32 "_tempnam" tempnam)
     sb-alien:c-string
   (dir sb-alien:c-string)
   (prefix sb-alien:c-string))
+
+)
 
 (defun temp-file-name ()
   "Return a temporary file name to compile strings into."
