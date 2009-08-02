@@ -1,5 +1,5 @@
 ;;; -*- mode: emacs-lisp; -*-
-;;; Time-stamp: "2009-07-27 01:04:10 (dennis)"
+;;; Time-stamp: "2009-08-03 01:21:02 (dennis)"
 ;;;
 ;;; TODO: сделать некую систему режимов, аля (i-am-at 'home) или (i-am-at 'mfi)
 ;;;       если работа происходит с файлами в ~/work/mfi/projects, то грузить
@@ -20,11 +20,8 @@
                "~/.emacs.d/elisp/jabber"
                "~/.emacs.d/elisp/magit"
                "~/.emacs.d/elisp/nav"
-               "~/.emacs.d/elisp/org/contrib/lisp"
-               "~/.emacs.d/elisp/org/lisp"
                "~/.emacs.d/elisp/rails"
                "~/.emacs.d/elisp/ruby"
-               "~/.emacs.d/elisp/w3m"
                )))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -411,7 +408,7 @@ Require `font-lock'."
   ;; needed:
   (let ((color
          (if buffer-read-only "white"
-           (if overwrite-mode "red" "orange"))))
+           (if overwrite-mode "red" "SteelBlue"))))
     (unless (and
              (string= color hcz-set-cursor-color-color)
              (string= (buffer-name) hcz-set-cursor-color-buffer))
@@ -606,6 +603,7 @@ Require `font-lock'."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (load-file "~/.emacs.d/elisp.d/jabber.el")
 (load-file "~/.emacs.d/elisp.d/twitter.el")
+(load-file "~/.emacs.d/elisp.d/w3m.el")
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -614,15 +612,6 @@ Require `font-lock'."
   (setq tramp-default-method "ssh"))
 (when +win32-p+
   (setq tramp-default-method "plink"))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; browse-url
-(when-available 'browse-url
-  (require-maybe 'w3m-load)
-  (setq browse-url-browser-function 'w3m-browse-url
-        w3m-use-cookies t)
-  (global-set-key (kbd "C-x m") 'browse-url-at-point))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -668,15 +657,9 @@ Require `font-lock'."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (load-file "~/.emacs.d/elisp.d/prog.el")
+(load-file "~/.emacs.d/elisp.d/cmake.el")
+(load-file "~/.emacs.d/elisp.d/yasnippet.el")
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; yaSnippet - yet another snippet extension for Emacs
-(when (require-maybe 'yasnippet)
-  (yas/initialize)
-  (yas/load-directory "~/.emacs.d/snippets")
-  (add-hook 'yas/after-exit-snippet-hook
-            '(lambda ()
-               (indent-region yas/snippet-beg yas/snippet-end))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -885,13 +868,6 @@ Require `font-lock'."
   (setq show-trailing-whitespace t
         ident-tabs-mode nil))
 (add-hook 'makefile-mode-hook 'negval/makefile-mode-hook)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; CMake
-(autoload 'cmake-mode "cmake-mode" t)
-(add-to-list 'auto-mode-alist '("CMakeLists\\.txt\\'" . cmake-mode))
-(add-to-list 'auto-mode-alist '("\\.cmake\\'" . cmake-mode))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

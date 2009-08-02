@@ -7,8 +7,12 @@
 (mapc (lambda (mode) (negval/lock-comment-notes mode))
       '(
         c-common-mode
+        cmake-mode
         cperl-mode
+        emacs-lisp-mode
+        erlang-mode
         haskell-mode
+        html-mode
         lisp-mode
         ruby-mode
         scheme-mode
