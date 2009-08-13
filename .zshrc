@@ -240,6 +240,9 @@ if ! test ${INSIDE_EMACS}; then
     #. ${HOME}/.zshprompt
 fi
 
+local be_quite
+[ $TERM = "dumb" ] && unsetopt zle && PS1='$ ' && unsetopt prompt_cr && be_quite=yeah
+
 ################################################################################
 # and finally... ($MACHINE is set in ~/.zshenv)
 echo "Welcome to $MACHINE, $USER. Local time is `date +%c`"
