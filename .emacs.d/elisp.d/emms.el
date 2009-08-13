@@ -3,6 +3,10 @@
 ;; TODO: use emms-auto.el
 
 (add-to-list 'load-path "~/.emacs.d/elisp/emms/lisp")
+(require 'emms)
+(require 'emms-setup)
+(emms-devel)
+
 (require 'emms-player-simple)
 (require 'emms-source-file)
 (require 'emms-source-playlist)
