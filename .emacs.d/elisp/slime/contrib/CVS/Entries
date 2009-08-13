@@ -1,9 +1,7 @@
-/ChangeLog/1.229/Wed Jul 22 20:29:04 2009//
 /README/1.3/Wed Jul 22 19:09:21 2009//
 /bridge.el/1.2/Wed Jul 22 19:09:21 2009//
 /inferior-slime.el/1.6/Wed Jul 22 19:09:21 2009//
 /slime-asdf.el/1.8/Wed Jul 22 19:09:21 2009//
-/slime-autodoc.el/1.16/Wed Jul 22 19:09:21 2009//
 /slime-banner.el/1.4/Wed Jul 22 19:09:21 2009//
 /slime-c-p-c.el/1.10/Wed Jul 22 19:09:21 2009//
 /slime-clipboard.el/1.2/Wed Jul 22 19:09:21 2009//
@@ -13,7 +11,6 @@
 /slime-fancy-inspector.el/1.3/Wed Jul 22 19:09:21 2009//
 /slime-fancy.el/1.8/Wed Jul 22 19:09:21 2009//
 /slime-fontifying-fu.el/1.14/Wed Jul 22 19:09:21 2009//
-/slime-fuzzy.el/1.11/Wed Jul 22 20:29:04 2009//
 /slime-highlight-edits.el/1.3/Wed Jul 22 19:09:22 2009//
 /slime-indentation-fu.el/1.3/Wed Jul 22 19:09:22 2009//
 /slime-indentation.el/1.3/Wed Jul 22 19:09:22 2009//
@@ -36,7 +33,6 @@
 /swank-asdf.lisp/1.7/Wed Jul 22 19:09:22 2009//
 /swank-c-p-c.lisp/1.3/Wed Jul 22 19:09:22 2009//
 /swank-clipboard.lisp/1.2/Wed Jul 22 19:09:22 2009//
-/swank-fancy-inspector.lisp/1.21/Wed Jul 22 19:09:22 2009//
 /swank-fuzzy.lisp/1.9/Wed Jul 22 20:29:05 2009//
 /swank-goo.goo/1.4/Wed Jul 22 19:09:22 2009//
 /swank-ikarus.ss/1.1/Wed Jul 22 19:09:22 2009//
@@ -54,4 +50,8 @@
 /swank-r6rs.scm/1.1/Wed Jul 22 19:09:22 2009//
 /swank-sbcl-exts.lisp/1.3/Wed Jul 22 19:09:22 2009//
 /swank.rb/1.2/Wed Jul 22 19:09:22 2009//
+/ChangeLog/1.232/Thu Aug 13 20:56:39 2009//
+/slime-autodoc.el/1.17/Thu Aug 13 20:56:39 2009//
+/slime-fuzzy.el/1.12/Thu Aug 13 20:56:39 2009//
+/swank-fancy-inspector.lisp/1.22/Thu Aug 13 20:56:39 2009//
 D

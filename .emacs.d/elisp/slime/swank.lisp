@@ -2765,8 +2765,8 @@ The time is measured in seconds."
          :severity (severity condition)
          :location (location condition)
          :references (references condition)
-         (let ((s (short-message condition)))
-           (if s (list :short-message s)))))
+         (let ((s (source-context condition)))
+           (if s (list :source-context s)))))
 
 (defun collect-notes (function)
   (let ((notes '()))
@@ -3185,6 +3185,24 @@ Include the nicknames if NICKNAMES is true."
 	  (t
            (profile fname)
 	   (format nil "~S is now profiled." fname)))))
+
+(defslimefun profile-by-substring (substring package)
+  (let ((count 0))
+    (flet ((maybe-profile (symbol)
+             (when (and (fboundp symbol)
+                        (not (profiledp symbol))
+                        (search substring (symbol-name symbol) :test #'equalp))
+               (handler-case (progn
+                               (profile symbol)
+                               (incf count))
+                 (error (condition)
+                   (warn "~a" condition))))))
+      (if package
+          (do-symbols (symbol (parse-package package))
+            (maybe-profile symbol))
+          (do-all-symbols (symbol)
+            (maybe-profile symbol))))
+    (format nil "~a function~:p ~:*~[are~;is~:;are~] now profiled" count)))
 
 
 ;;;; Source Locations

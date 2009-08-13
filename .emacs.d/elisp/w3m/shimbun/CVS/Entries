@@ -9,7 +9,6 @@
 /sb-asahi-mytown.el/1.13/Wed Jul 22 19:09:22 2009//
 /sb-asahi.el/1.169/Wed Jul 22 19:09:22 2009//
 /sb-atmarkit.el/1.18/Wed Jul 22 19:09:22 2009//
-/sb-atom-hash.el/1.7/Wed Jul 22 19:09:22 2009//
 /sb-atom.el/1.6/Wed Jul 22 19:09:22 2009//
 /sb-bbc.el/1.16/Wed Jul 22 19:09:22 2009//
 /sb-bbdb-ml.el/1.12/Wed Jul 22 19:09:22 2009//
@@ -130,6 +129,7 @@
 /sb-zdnet-jp.el/1.9/Wed Jul 22 19:09:22 2009//
 /sb-zeit-de.el/1.15/Wed Jul 22 19:09:22 2009//
 /shimbun.el/1.199/Wed Jul 22 19:09:22 2009//
-/ChangeLog/1.202/Sun Aug  2 20:18:05 2009//
 /sb-slashdot.el/1.9/Sun Aug  2 20:18:05 2009//
+/ChangeLog/1.203/Thu Aug 13 20:56:45 2009//
+/sb-atom-hash.el/1.8/Thu Aug 13 20:56:45 2009//
 D
