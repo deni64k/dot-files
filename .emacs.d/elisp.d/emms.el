@@ -37,4 +37,9 @@
 (global-set-key (kbd "C-c e s") 'emms-stop)
 (global-set-key (kbd "C-c e r") 'emms-start)
 
+(defun emms-mpd ()
+  (interactive)
+  (emms-player-mpd-connect)
+  (emms-cache-set-from-mpd-all))
+
 ;;; emms.el ends here
