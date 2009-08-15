@@ -1,5 +1,5 @@
 ;;; -*- mode: emacs-lisp; -*-
-;;; Time-stamp: "2009-08-04 00:22:16 (dennis)"
+;;; Time-stamp: "2009-08-15 22:58:04 (dennis)"
 ;;;
 ;;; TODO: сделать некую систему режимов, аля (i-am-at 'home) или (i-am-at 'mfi)
 ;;;       если работа происходит с файлами в ~/work/mfi/projects, то грузить
@@ -25,42 +25,10 @@
                )))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; load helpers
 (load-file "~/.emacs.d/elisp.d/helpers.el")
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; what kind of system are we using?  start with these, as it will influence
-;; other stuff inspired by: http://www.xsteve.at/prg/emacs/.emacs.txt
-(defconst +win32-p+
-  (eq system-type 'windows-nt)
-  "Are we running on a WinTel system?")
-(defconst +unix-p+
-  (or (eq system-type 'berkeley-unix)
-      (eq system-type 'gnu/linux)
-      (eq system-type 'linux))
-  "Are we running on a Unix or Unix-like system?")
-(defconst +home-p+ (string-match (getenv "PLACEMENT") "home")
-  "Am I at home?")
-(defconst +work-p+ (string-match (getenv "PLACEMENT") "work")
-  "Am I at work?")
-(defun console-p nil
-  "Are we running in a console (non-X) environment?"
-  (eq (symbol-value 'window-system) nil))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; load passwords
-(defmacro negval/put-secret (for-what)
-  `(progn
-     (require 'secrets "~/.secrets.gpg")
-     (let ((secret (cdr (assoc ',for-what negval/*secrets*))))
-       (unless secret
-         (error "Couldn't find password for %s" (symbol-name ',for-what)))
-       secret)
-     ))
-;; make epg don't use graphical password prompt
-(setenv "GPG_AGENT_INFO" nil)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(load-file "~/.emacs.d/elisp.d/constants.el")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; the file-coding-system-alist
@@ -312,79 +280,6 @@ Require `font-lock'."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; X settings
-(defun negval/x-clipboard nil
-  (setq x-select-enable-clipboard t)        ; copy-paste should work ...
-  (setq interprogram-paste-function         ; ...with...
-        'x-cut-buffer-or-selection-value))  ; ...other X clients
-
-(defun negval/x-colors nil
-  "Color settings."
-  (require 'color-theme)
-  (color-theme-initialize)
-  (color-theme-comidia)
-
-  ;; highlight the current line; set a custom face, so we can
-  ;; recognize from the normal marking (selection)
-  ;; don't turn in on globally, only in specific modes (see negval/c-mode-hook)
-  (when-available 'global-hl-line-mode
-    (progn
-      (custom-set-faces
-       '(hl-line ((((class color) (background dark)) (:background "#111111"))
-                  (((class color) (background light)) (:background "snow3")))))
-      (setq hl-line-face 'hl-line)
-      (global-hl-line-mode t))) ;; turn it on for all modes by default
-
-  ;; show-paren-mode
-  ;; show a subtle blinking of the matching paren (the defaults are ugly)
-  ;; http://www.emacswiki.org/cgi-bin/wiki/ShowParenMode
-  (when-available 'show-paren-mode
-    (progn
-      (custom-set-faces
-       '(show-paren-match ((((class color) (background dark)) (:background "#222222"))
-                           (((class color) (background light)) (:background "snow1")))))
-      (setq show-paren-style 'expression)
-      (show-paren-mode t)))
-
-  (custom-set-faces
-   '(widget-field ((((class color) (background dark))
-                    (:background "dim gray" :foreground "light cyan"))))
-   '(highlight ((((class color) (background dark))
-                 (:background "dark olive green" :foreground "light cyan")))))
-
-  (custom-set-faces
-   '(header-line ((((class color) (background dark))
-                   (:background "gray10" :family "Droid Sans Mono"
-                    :foreground "gray90" :height 0.85 :width condensed))))
-   '(mode-line ((((class color) (background dark))
-                 (:background "gray10" :family "Droid Sans"
-                  :foreground "gray90" :height 0.85
-                  :inverse-video nil :box nil))))
-   '(mode-line-inactive ((((class color) (background dark))
-                          (:background "gray7" :family "Droid Sans"
-                           :foreground "gray90" :height 0.85
-                           :inverse-video nil :box nil))))
-   '(mode-line-buffer-id ((((class color) (background dark))
-                           (:background "gray15" :family "Droid Sans"
-                            :width condensed
-                            :foreground "green3" :box nil))))
-   '(which-func ((((class color) (background dark))
-                  (:background "gray15" :family "Droid Sans"
-                   :width condensed
-                   :foreground "cyan1")))))
-  )
-
-(defun negval/x-bars nil
-  (scroll-bar-mode 0)
-  (tool-bar-mode 0)
-  (menu-bar-mode 0))
-
-;; (negval/x-clipboard)
-(negval/x-colors)
-(negval/x-bars)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; jump to the matching parenthesis
 (defun paren-match ()
   "Tries to jump to the matching parenthesis to the one currently under the point."
@@ -465,7 +360,7 @@ Require `font-lock'."
 ;; *fast* linenumbers on the left (unlike setnu.el)
 ;; http://www.emacsblog.org/2007/03/29/quick-tip-line-numbering/
 (when (require-maybe 'linum)
-  (global-set-key (kbd "<f6>")     'linum))
+  (global-set-key (kbd "<f6>") 'linum-mode))
 
 (global-set-key (kbd "<f7>") 'compile)
 
@@ -601,18 +496,26 @@ Require `font-lock'."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(load-file "~/.emacs.d/elisp.d/emms.el")
-(load-file "~/.emacs.d/elisp.d/jabber.el")
-(load-file "~/.emacs.d/elisp.d/twitter.el")
-(load-file "~/.emacs.d/elisp.d/w3m.el")
+;; general settings
+(load-file "~/.emacs.d/elisp.d/x.el")
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; tramp, for remote access
-(when +unix-p+
-  (setq tramp-default-method "ssh"))
-(when +win32-p+
-  (setq tramp-default-method "plink"))
+;; packages and settings
+(load-file "~/.emacs.d/elisp.d/cedet.el")
+(load-file "~/.emacs.d/elisp.d/ecb.el")
+(load-file "~/.emacs.d/elisp.d/emms.el")
+(load-file "~/.emacs.d/elisp.d/flymake.el")
+(load-file "~/.emacs.d/elisp.d/git.el")
+(load-file "~/.emacs.d/elisp.d/greek.el")
+(load-file "~/.emacs.d/elisp.d/ispell.el")
+(load-file "~/.emacs.d/elisp.d/jabber.el")
+(load-file "~/.emacs.d/elisp.d/org.el")
+(load-file "~/.emacs.d/elisp.d/template-file.el")
+(load-file "~/.emacs.d/elisp.d/tramp.el")
+(load-file "~/.emacs.d/elisp.d/twitter.el")
+(load-file "~/.emacs.d/elisp.d/w3m.el")
+(load-file "~/.emacs.d/elisp.d/yasnippet.el")
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -634,272 +537,23 @@ Require `font-lock'."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Ispell
-(when (featurep 'flyspell)
-  (set-default 'ispell-skip-html t)
-
-  (setq ispell-dictionary "british")
-
-  (defun turn-on-flyspell ()
-    "Force flyspell-mode on using a positive arg. For use in hooks."
-    (interactive)
-    (flyspell-mode 1))
-
-  (autoload 'flyspell-mode "flyspell" "On-the-fly spelling checker." t)
-  (add-hook 'message-mode-hook 'turn-on-flyspell)
-  (add-hook 'text-mode-hook 'turn-on-flyspell)
-  (add-hook 'nxml-mode-hook 'turn-on-flyspell)
-  (add-hook 'texinfo-mode-hook 'turn-on-flyspell)
-  (add-hook 'TeX-mode-hook 'turn-on-flyspell)
-
-  (add-hook 'c-mode-common-hook 'flyspell-prog-mode)
-  (add-hook 'lisp-mode-hook 'flyspell-prog-mode)
-  (add-hook 'emacs-lisp-mode-hook 'flyspell-prog-mode))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
+;; modes
 (load-file "~/.emacs.d/elisp.d/prog.el")
-(load-file "~/.emacs.d/elisp.d/cmake.el")
-(load-file "~/.emacs.d/elisp.d/yasnippet.el")
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; pretty greek symbols
-
-(defun unicode-symbol (name)
-  "Translate a symbolic name for a Unicode character -- e.g., LEFT-ARROW
-  or GREATER-THAN into an actual Unicode character code. "
-  (decode-char 'ucs (case name
-                      ;; arrows
-                      ('left-arrow 8592)
-                      ('up-arrow 8593)
-                      ('right-arrow 8594)
-                      ('down-arrow 8595)
-
-                      ;; boxes
-                      ('double-vertical-bar #X2551)
-
-                      ;; relational operators
-                      ('equal #X003d)
-                      ('not-equal #X2260)
-                      ('identical #X2261)
-                      ('not-identical #X2262)
-                      ('less-than #X003c)
-                      ('greater-than #X003e)
-                      ('less-than-or-equal-to #X2264)
-                      ('greater-than-or-equal-to #X2265)
-
-                      ;; logical operators
-                      ('logical-and #X2227)
-                      ('logical-or #X2228)
-                      ('logical-neg #X00AC)
-
-                      ;; misc
-                      ('nil #X2205)
-                      ('horizontal-ellipsis #X2026)
-                      ('double-exclamation #X203C)
-                      ('prime #X2032)
-                      ('double-prime #X2033)
-                      ('down-right-diagonal-ellipsis #x22f1)
-                      ('for-all #X2200)
-                      ('there-exists #X2203)
-                      ('element-of #X2208)
-                      ('contains-as-member #x220b)
-
-                      ;; mathematical operators
-                      ('square-root #X221A)
-                      ('squared #X00B2)
-                      ('cubed #X00B3)
-
-                      ;; letters
-                      ('lambda #X03BB)
-                      ('alpha #X03B1)
-                      ('beta #X03B2)
-                      ('gamma #X03B3)
-                      ('delta #X03B4))))
-
-(defun substitute-pattern-with-unicode (pattern symbol)
-  "Add a font lock hook to replace the matched part of PATTERN with the
-  Unicode symbol SYMBOL looked up with UNICODE-SYMBOL."
-  (interactive)
-  (font-lock-add-keywords
-   nil `((,pattern (0 (progn (compose-region (match-beginning 1) (match-end 1)
-                                           ,(unicode-symbol symbol))
-                           nil))))))
-
-(defun substitute-patterns-with-unicode (patterns)
-  "Call SUBSTITUTE-PATTERN-WITH-UNICODE repeatedly."
-  (mapcar #'(lambda (x)
-              (substitute-pattern-with-unicode (car x)
-                                               (cdr x)))
-          patterns))
-
-(defun greek-symbols-in-lisp ()
-  (substitute-patterns-with-unicode
-   (list (cons "\\(nil\\)" 'nil)
-         (cons "\\<\\(sqrt\\)\\>" 'square-root)
-         (cons "\\<\\(not\\)\\>" 'logical-neg)
-         (cons "\\<\\(lambda\\)\\>" 'lambda)
-         (cons "\\<\\(alpha\\)\\>" 'alpha)
-         (cons "\\<\\(beta\\)\\>" 'beta)
-         (cons "\\<\\(gamma\\)\\>" 'gamma)
-         (cons "\\<\\(delta\\)\\>" 'delta)
-         (cons "\\<\\\"\\>" 'double-prime)
-         )))
-(add-hook 'lisp-mode-hook 'greek-symbols-in-lisp)
-(add-hook 'emacs-lisp-mode-hook 'greek-symbols-in-lisp)
-
-(add-hook 'c++-mode-hook
-          (lambda ()
-            (substitute-patterns-with-unicode
-             (list (cons "\\(->\\)" 'right-arrow)
-                   (cons "\\(==\\)" 'identical)
-                   (cons "\\(\\!=\\)" 'not-equal)
-                   (cons "\\<\\(sqrt\\)\\>" 'square-root)
-                   (cons "\\(&&\\)" 'logical-and)
-                   (cons "\\(||\\)" 'logical-or)
-                   (cons "\\<\\(!\\)\\[^=\\]\\>" 'logical-neg)
-                   (cons "\\(>\\)\\[^=\\]" 'greater-than)
-                   (cons "\\(<\\)\\[^=\\]" 'less-than)
-                   (cons "\\(>=\\)" 'greater-than-or-equal-to)
-                   (cons "\\(<=\\)" 'less-than-or-equal-to)
-                   (cons "\\<\\(lambda\\)\\>" 'lambda)
-                   (cons "\\<\\(alpha\\)\\>" 'alpha)
-                   (cons "\\<\\(beta\\)\\>" 'beta)
-                   (cons "\\<\\(gamma\\)\\>" 'gamma)
-                   (cons "\\<\\(delta\\)\\>" 'delta)
-                   (cons "\\(\\.\\.\\.\\)" 'horizontal-ellipsis)
-                   (cons "\\(\\\\\\\"\\)" 'double-prime)
-                   (cons "\\(\\\\\\\\\\\)" 'down-right-diagonal-ellipsis)
-                   ))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; text-mode
-(defun negval/text-mode-hook ()
-  (interactive)
-  (set-fill-column 78)                    ; lines are 78 chars long ...
-  (auto-fill-mode t)                      ; ... and wrapped around automagically
-
-  ;; http://taiyaki.org/elisp/word-count/src/word-count.el
-  (when (require-maybe 'word-count) ; count the words
-    (word-count-mode t))
-
-  (when (require-maybe 'filladapt) ; do the intelligent wrapping of lines,...
-    (filladapt-mode t))) ; ... (bullets, numbering) if
-                                        ; available
-(add-hook 'text-mode-hook 'negval/text-mode-hook)
-
-;; turn on autofill for all text-related modes
-(toggle-text-mode-auto-fill)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; rpm-spec-mode
-(autoload 'rpm-spec-mode "rpm-spec-mode.el" "RPM spec mode." t)
-(setq auto-mode-alist (append '(("\\.spec" . rpm-spec-mode))
-                              auto-mode-alist))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; TeX/LaTex
-(defun negval/tex-mode-hook ()
-  (interactive)
-
-  (setq TeX-parse-self t) ; Enable parse on load.
-  (setq TeX-auto-save t) ; Enable parse on save.
-
-  (set-key-func "C-c 1"  (negval/tex-tag-region-or-point-outside "section"))
-  (set-key-func "C-c 2"  (negval/tex-tag-region-or-point-outside "subsection"))
-  (set-key-func "C-c 3"  (negval/tex-tag-region-or-point-outside "subsubsection"))
-
-  (set-key-func "C-c C-a l"  (negval/tex-tag-region-or-point-outside "href{}"))
-
-  (set-key-func "C-c i"  (negval/tex-tag-region-or-point "em"))
-  (set-key-func "C-c b"  (negval/tex-tag-region-or-point "bf"))
-  (set-key-func "C-c s"  (negval/tex-tag-region-or-point "small"))
-  (set-key-func "C-c u"  (negval/tex-tag-region-or-point "underline"))
-  (set-key-func "C-c tt" (negval/tex-tag-region-or-point "tt")))
-
-(add-hook 'tex-mode-hook 'negval/tex-mode-hook)
-(add-hook 'LaTeX-mode-hook 'negval/tex-mode-hook)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; some TeX/LaTeX-related functions
-(defun negval/tex-tag-region (b e tag)
-  "put '{\tag...}' around text"
-  (let ((tb (concat "{\\" tag " ")))
-    (insert
-     (concat tb (delete-and-extract-region b e) "}"))
-    (goto-char (- (point) 1))))
-
-(defun negval/tex-tag-region-or-point (el)
-  "tag the region or the point if there is no region"
-  (when (not mark-active)
-    (set-mark (point)))
-  (negval/tex-tag-region (region-beginning) (region-end) el))
-
-(defun negval/tex-tag-region-outside (b e tag)
-  "put '{\tag...}' around text"
-  (let ((tb (concat "\\" tag "{")))
-    (insert
-     (concat tb (delete-and-extract-region b e) "}"))
-    (goto-char (- (point) 1))))
-
-(defun negval/tex-tag-region-or-point-outside (el)
-  "tag the region or the point if there is no region"
-  (when (not mark-active)
-    (set-mark (point)))
-  (negval/tex-tag-region-outside (region-beginning) (region-end) el))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (load-file "~/.emacs.d/elisp.d/c-cxx.el")
+(load-file "~/.emacs.d/elisp.d/cmake.el")
 (load-file "~/.emacs.d/elisp.d/emacs-lisp.el")
 (load-file "~/.emacs.d/elisp.d/erlang.el")
 (load-file "~/.emacs.d/elisp.d/haskell.el")
 (load-file "~/.emacs.d/elisp.d/lisp.el")
+(load-file "~/.emacs.d/elisp.d/makefiles.el")
 (load-file "~/.emacs.d/elisp.d/perl.el")
+(load-file "~/.emacs.d/elisp.d/rpm.el")
 (load-file "~/.emacs.d/elisp.d/ruby.el")
 (load-file "~/.emacs.d/elisp.d/scheme.el")
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Makefiles
-(defun negval/makefile-mode-hook ()
-  (interactive)
-  (setq show-trailing-whitespace t
-        ident-tabs-mode nil))
-(add-hook 'makefile-mode-hook 'negval/makefile-mode-hook)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; shell
-
-;; Use ANSI colors within shell-mode.
-(add-hook 'shell-mode-hook 'ansi-color-for-comint-mode-on)
-
-;; syntax check
-(defun sh-check-finish-hook (buf msg)
-  "Function, that is executed at the end of sh check"
-  (when (not (string-match "finished" msg))
-    (next-error 1 t)))
-
-(define-compilation-mode sh-check-mode "SH"
-  "Mode for check sh source code."
-  (set (make-local-variable 'compilation-disable-input) t)
-  (set (make-local-variable 'compilation-scroll-output) nil)
-  (set (make-local-variable 'compilation-finish-functions)
-       (list 'sh-check-finish-hook)))
-
-(defun sh-check-syntax ()
-  "Check syntax of current file"
-  (interactive)
-  (when (string-match "^\\(ba\\|z\\)sh" (symbol-name sh-shell))
-    (save-some-buffers t)
-    (compilation-start (concat (symbol-name sh-shell) " -n " (buffer-file-name))
-                       'sh-check-mode)))
-
-(add-hook 'shell-script-mode-hook
-          (lambda nil (local-set-key (kbd "C-c l") 'sh-check-syntax)))
+(load-file "~/.emacs.d/elisp.d/sh.el")
+(load-file "~/.emacs.d/elisp.d/tex.el")
+(load-file "~/.emacs.d/elisp.d/text.el")
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -917,31 +571,6 @@ Require `font-lock'."
 ;;             (get-buffer-window buffer t)))
 ;;     (t
 ;;       (message "Compilation exited abnormally: %s" string))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; flymake
-(when (require-maybe 'flymake)
-  (push '("\\.cxx\\'" flymake-simple-make-init) flymake-allowed-file-name-masks)
-  (push '("\\.cc\\'"  flymake-simple-make-init) flymake-allowed-file-name-masks)
-  (custom-set-faces
-   '(flymake-errline ((((class color)) (:underline "Red2"))))
-   '(flymake-warnline ((((class color)) (:underline "Blue2")))))
-  (add-hook 'c-mode-common-hook
-            (lambda ()
-              (when (flymake-can-syntax-check-file buffer-file-name)
-                (local-set-key (kbd "C-c C-v")
-                               (lambda ()
-                                 (interactive)
-                                 (flymake-mode t)
-                                 (flymake-goto-next-error)))
-                (local-set-key (kbd "C-c v")
-                               (lambda ()
-                                 (interactive)
-                                 (flymake-mode t)
-                                 (flymake-goto-next-error)
-                                 (flymake-display-err-menu-for-current-line))))))
-  )
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1002,167 +631,6 @@ Require `font-lock'."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Org
-(custom-set-variables
- '(org-todo-keywords '((sequence "TODO(t)" "WAITING(w)" "STARTED(s)" "|" "DONE(d)"
-                                 "CANCELED(c)")))
- '(org-special-ctrl-a/e t)
- '(mark-diary-entries-in-calendar t)
- '(diary-file "~/documents/org/diary")
- '(org-agenda-files (quote ("~/documents/org/programming.org")))
- '(org-default-notes-file "~/documents/org/notes.org")
- '(org-directory "~/documents/org"))
-
-(require 'org-install)
-(require 'org)
-
-(add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
-(add-to-list 'file-coding-system-alist (cons "\\.org$" 'utf-8))
-
-(add-hook 'org-mode-hook 'turn-on-font-lock)
-
-;; diary setup
-(require 'diary-lib)
-(add-hook 'diary-display-hook 'fancy-diary-display)
-
-;; link abbrevs
-(add-to-list 'org-link-abbrev-alist '("emacswiki" . "http://www.emacswiki.org/cgi-bin/wiki/"))
-(add-to-list 'org-link-abbrev-alist '("google" . "http://www.google.com/search?q="))
-
-;; remember mode
-(org-remember-insinuate)
-(define-key global-map (kbd "C-c r") 'org-remember)
-
-(setq org-remember-templates
-      '(
-        ("Todo" ?t "* TODO %?\n %i\n %a" (concat org-directory "/TODO.org") "Tasks")
-        ))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Git
-(when (require-maybe 'magit)
-  (custom-set-faces
-   '(magit-item-highlight ((((class color) (background dark))
-                            (:background "gray10"))))
-   '(magit-log-tag-label ((((class color) (background dark))
-                           (:background "gray15" :foreground "goldenrod1"))))
-   '(magit-log-head-label ((((class color) (background dark))
-                            (:background "gray15" :foreground "green yellow")))))
-  (global-set-key (kbd "C-c m") 'magit-status))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; CEDET
-;; http://xtalk.msk.su/~ott/ru/writings/emacs-devenv/EmacsCedet.html
-;;
-;; Enabling Semantic (code-parsing, smart completion) features.
-(load-file "~/.emacs.d/elisp/cedet/common/cedet.el")
-(setq semantic-load-turn-useful-things-on t)
-(semantic-load-enable-excessive-code-helpers)
-;;(semantic-load-enable-semantic-debugging-helpers)
-
-(setq
- senator-minor-mode-name "SN"
- semantic-imenu-auto-rebuild-directory-indexes nil)
-
-(global-srecode-minor-mode 1)
-(global-semantic-mru-bookmark-mode 1)
-(global-semantic-folding-mode 1)      ; hide and show blocks
-(global-semantic-idle-tag-highlight-mode 1)
-
-(require 'semantic-decorate-include)
-(require 'semantic-ia)
-(require 'semantic-tag)
-
-(setq-mode-local c-mode semanticdb-find-default-throttle
-                 '(project unloaded system recursive))
-(setq-mode-local c++-mode semanticdb-find-default-throttle
-                 '(project unloaded system recursive))
-(setq-mode-local erlang-mode semanticdb-find-default-throttle
-                 '(project unloaded system recursive))
-;;(setq-mode-local c++-mode semanticdb-implied-include-tags
-;;                 (semantic-find-tags-included "/home/dsuhonin/projects/idfs/include/pch.hxx"))
-
-;; Enable SemanticDB.
-(require 'semanticdb)
-;; TODO: parse `gcc -print-prog-name=cc1plus` -v < /dev/null
-(require 'semantic-gcc)
-(semantic-gcc-setup)
-(global-semanticdb-minor-mode 1)
-(setq semanticdb-default-save-directory "~/.tmp/semanticdb")
-(when (not (file-exists-p semanticdb-default-save-directory))
-  (make-directory semanticdb-default-save-directory))
-;; (dolist (dir '("/usr/include" "/usr/local/include" "/usr/include/postgresql"
-;;                "/usr/include/c++/4.2" "/usr/include/c++/4.2/backwards"
-;;                "/usr/include/c++/4.3" "/usr/include/c++/4.3/backwards"))
-;;   (when (file-exists-p dir)
-;;     (semantic-add-system-include dir 'c-mode)
-;;     (semantic-add-system-include dir 'c++-mode)))
-(setq boost-dir "/usr/include/boost")
-(when (file-exists-p boost-dir)
-  (add-to-list 'semantic-lex-c-preprocessor-symbol-file
-               (concat boost-dir "/boost/config.hpp")))
-
-;; EAssist.
-(when (require-maybe 'eassist)
-  (setq eassist-header-switches
-        (append eassist-header-switches
-                '(("hxx" "cxx") ("cxx" "hxx")
-                  ("H" "cc") ("cc" "H"))
-                )))
-
-;; SpeedBar.
-(require 'semantic-sb)
-
-;; EDE.
-(require 'semantic-lex-spp)
-(global-ede-mode 1)
-
-;; Enable Imenu.
-(add-hook 'semantic-init-hooks
-  (lambda ()
-    (imenu-add-to-menubar "TAGS")))
-
-(defun negval/cedet-hook nil
-  (local-set-key (kbd "C-<return>") 'semantic-ia-complete-symbol)
-  (local-set-key (kbd "C-c ?") 'semantic-ia-complete-symbol-menu)
-  (local-set-key (kbd "C-c >") 'semantic-complete-analyze-inline)
-  (local-set-key (kbd "C-c =") 'semantic-decoration-include-visit)
-  (local-set-key (kbd "C-c p") 'semantic-analyze-proto-impl-toggle)
-  (local-set-key (kbd "C-c j") 'semantic-ia-fast-jump)
-  (local-set-key (kbd "C-c q") 'semantic-ia-show-doc)
-  (local-set-key (kbd "C-c s") 'semantic-ia-show-summary)
-  (local-set-key (kbd "C-c h") 'eassist-switch-h-cpp))
-
-(add-hook 'c-mode-common-hook 'negval/cedet-hook)
-(add-hook 'emacs-lisp-mode-hook 'negval/cedet-hook)
-(add-hook 'erlang-mode-hook 'negval/cedet-hook)
-
-;; gnu global support
-;; (require 'semanticdb-global)
-;; (semanticdb-enable-gnu-global-databases 'c-mode)
-;; (semanticdb-enable-gnu-global-databases 'c++-mode)
-
-;; ctags
-;; (require 'semanticdb-ectag)
-;; (semantic-load-enable-primary-exuberent-ctags-support)
-
-(custom-set-variables
- '(semantic-idle-scheduler-work-idle-time 10)
- '(semantic-self-insert-show-completion-function
-   (lambda nil (semantic-ia-complete-symbol-menu (point))))
- '(global-semantic-tag-folding-mode
-   t nil (semantic-util-modes)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; ECB
-(add-hook 'c-mode-common-hook
-          (lambda nil (require-maybe 'ecb-autoloads)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; if we try to save a file owned by someone else, use sudo
 ;; http://www.emacswiki.org/cgi-bin/wiki/SudoSave
 (when (require-maybe 'sudo)
@@ -1193,38 +661,6 @@ Require `font-lock'."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Some useful procedures.
-
-;; Convert a buffer from dos ^M end of lines to unix end of lines.
-(defun dos2unix ()
-  (interactive)
-    (goto-char (point-min))
-      (while (search-forward "\r" nil t) (replace-match "")))
-;; vice versa
-(defun unix2dos ()
-  (interactive)
-    (goto-char (point-min))
-      (while (search-forward "\n" nil t) (replace-match "\r\n")))
-;; Insert current date.
-(defun insert-date ()
-  "Insert date at point."
-  (interactive)
-  (insert (format-time-string "%a %b %e, %Y %l:%M %p")))
-;; Show ascii table.
-(defun ascii-table ()
-  "Print the ascii table. Based on a defun by Alex Schroeder <asc@bsiag.com>"
-  (interactive)
-  (switch-to-buffer "*ASCII*")
-  (erase-buffer)
-  (insert (format "ASCII characters up to number %d.\n" 254))
-  (let ((i 0))
-    (while (< i 254)
-      (setq i (+ i 1))
-      (insert (format "%4d %c\n" i i))))
-  (beginning-of-buffer))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; "I always compile my .emacs, saves me about two seconds
 ;; startuptime. But that only helps if the .emacs.elc is newer
 ;; than the .emacs. So compile .emacs if it's not."
@@ -1252,24 +688,6 @@ Require `font-lock'."
   (add-hook 'after-save-hook 'negval/auto-recompile-file-always))
 
 (add-hook 'emacs-lisp-mode-hook 'add-after-save-hook)
-
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(diff-added ((t (:foreground "Green"))) t)
- '(diff-changed ((t (:foreground "MediumBlue"))) t)
- '(diff-context ((t (:foreground "White"))) t)
- '(diff-file-header ((t (:foreground "Red" :background "LightGray"))) t)
- '(diff-header ((t (:foreground "Red"))) t)
- '(diff-hunk-header ((t (:foreground "White" :background "Salmon"))) t)
- '(diff-index ((t (:foreground "Green"))) t)
- '(diff-nonexistent ((t (:foreground "Blue"))) t)
- '(diff-removed ((t (:foreground "Magenta"))) t)
- '(variable-pitch
-   ((((class color)) (:family "Droid Sans"))))
- )
 
 (custom-set-variables
  '(mouse-yank-at-point t))
