@@ -1,5 +1,5 @@
 ;;; -*- mode: emacs-lisp; -*-
-;;; Time-stamp: "2009-08-15 22:58:04 (dennis)"
+;;; Time-stamp: "2009-08-16 22:57:20 (dennis)"
 ;;;
 ;;; TODO: сделать некую систему режимов, аля (i-am-at 'home) или (i-am-at 'mfi)
 ;;;       если работа происходит с файлами в ~/work/mfi/projects, то грузить
@@ -512,7 +512,7 @@ Require `font-lock'."
 (load-file "~/.emacs.d/elisp.d/jabber.el")
 (load-file "~/.emacs.d/elisp.d/org.el")
 (load-file "~/.emacs.d/elisp.d/template-file.el")
-(load-file "~/.emacs.d/elisp.d/tramp.el")
+;;(load-file "~/.emacs.d/elisp.d/tramp.el")
 (load-file "~/.emacs.d/elisp.d/twitter.el")
 (load-file "~/.emacs.d/elisp.d/w3m.el")
 (load-file "~/.emacs.d/elisp.d/yasnippet.el")
@@ -546,7 +546,7 @@ Require `font-lock'."
 (load-file "~/.emacs.d/elisp.d/erlang.el")
 (load-file "~/.emacs.d/elisp.d/haskell.el")
 (load-file "~/.emacs.d/elisp.d/lisp.el")
-(load-file "~/.emacs.d/elisp.d/makefiles.el")
+(load-file "~/.emacs.d/elisp.d/makefile.el")
 (load-file "~/.emacs.d/elisp.d/perl.el")
 (load-file "~/.emacs.d/elisp.d/rpm.el")
 (load-file "~/.emacs.d/elisp.d/ruby.el")

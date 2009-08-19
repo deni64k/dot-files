@@ -1,5 +1,6 @@
 ;; Lisp
-(add-to-list 'load-path "~/emacs.d/elisp/slime")
+(add-to-list 'load-path "~/.emacs.d/elisp/slime")
+(add-to-list 'load-path "~/.emacs.d/elisp/slime/contrib")
 
 (add-hook 'lisp-mode-hook
           (lambda ()

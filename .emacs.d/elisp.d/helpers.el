@@ -17,6 +17,19 @@
   `(when (fboundp ,func) ,@foo))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; load passwords
+(defmacro negval/put-secret (for-what)
+  `(progn
+     (require 'secrets "~/.secrets.gpg")
+     (let ((secret (cdr (assoc ',for-what negval/*secrets*))))
+       (unless secret
+         (error "Couldn't find password for %s" (symbol-name ',for-what)))
+       secret)
+     ))
+;; makes epg don't use graphical password prompt
+(setenv "GPG_AGENT_INFO" nil)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; convert a buffer from dos ^M end of lines to unix end of lines
 (defun dos2unix ()
   (interactive)
