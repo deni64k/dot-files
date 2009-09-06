@@ -9,9 +9,8 @@
 (semantic-load-enable-excessive-code-helpers)
 ;;(semantic-load-enable-semantic-debugging-helpers)
 
-(setq
- senator-minor-mode-name "SN"
- semantic-imenu-auto-rebuild-directory-indexes nil)
+(setq senator-minor-mode-name "SN"
+      semantic-imenu-auto-rebuild-directory-indexes nil)
 
 (global-srecode-minor-mode 1)
 (global-semantic-mru-bookmark-mode 1)
@@ -40,14 +39,15 @@
 (setq semanticdb-default-save-directory "~/.tmp/semanticdb")
 (when (not (file-exists-p semanticdb-default-save-directory))
   (make-directory semanticdb-default-save-directory))
-;; (dolist (dir '("/usr/include" "/usr/local/include" "/usr/include/postgresql"
-;;                "/usr/include/c++/4.2" "/usr/include/c++/4.2/backwards"
-;;                "/usr/include/c++/4.3" "/usr/include/c++/4.3/backwards"))
-;;   (when (file-exists-p dir)
-;;     (semantic-add-system-include dir 'c-mode)
-;;     (semantic-add-system-include dir 'c++-mode)))
-(setq boost-dir "/usr/include/boost")
-(when (file-exists-p boost-dir)
+(dolist (dir '("/usr/include" "/usr/local/include" "/usr/include/postgresql"
+               "/usr/include/c++/4.2" "/usr/include/c++/4.2/backwards"
+               "/usr/include/c++/4.3" "/usr/include/c++/4.3/backwards"))
+  (when (file-exists-p dir)
+    (semantic-add-system-include dir 'c-mode)
+    (semantic-add-system-include dir 'c++-mode)))
+(setq boost-dir (find-if #'file-exists-p '("/usr/include/boost"
+                                           "/usr/local/include/boost")))
+(when boost-dir
   (add-to-list 'semantic-lex-c-preprocessor-symbol-file
                (concat boost-dir "/boost/config.hpp")))
 

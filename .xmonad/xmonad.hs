@@ -1,6 +1,6 @@
 -- Haskell common
 import qualified Data.Map as M
-import System.IO.UTF8(hPutStrLn)
+import System.IO(hPutStrLn)
 
 import System.Exit
 

@@ -39,7 +39,7 @@
                                           ("from" . "←")
                                           ("to"   . "→")
                                           ("both" . "⇄")))
-   '(jabber-roster-line-format " %c %-25n %u %-8s %a  %S")
+   '(jabber-roster-line-format " %c %-25n %u %-8s %S")
    '(jabber-show-offline-contacts nil)
    '(jabber-roster-show-bindings nil)
    ;; autoaway
