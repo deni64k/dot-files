@@ -184,7 +184,7 @@
 
 (defconst emacs-w3m-version
   (eval-when-compile
-    (let ((rev "$Revision: 1.1453 $"))
+    (let ((rev "$Revision: 1.1457 $"))
       (and (string-match "\\.\\([0-9]+\\) \\$\\'" rev)
 	   (setq rev (- (string-to-number (match-string 1 rev)) 1136))
 	   (format "1.4.%d" (+ rev 50)))))
@@ -532,18 +532,12 @@ terminal.)"
    ((not (featurep 'mule)) 'iso-8859-1)
    ((eq w3m-type 'w3mmee) 'ctext)
    ((eq w3m-type 'w3m-m17n)
-    (cond
-     ((and (equal "Japanese" w3m-language)
-	   (featurep 'w3m-ems)
-	   (not (featurep 'un-define))
-	   (fboundp 'utf-translate-cjk-mode))
-      'utf-8)
-     ((equal "Japanese" w3m-language)
-      'iso-2022-7bit-ss2)
-     ((w3m-find-coding-system 'utf-8)
-      'utf-8)
-     (t
-      'iso-2022-7bit-ss2)))
+    (if (and (w3m-find-coding-system 'utf-8)
+	     (not (and (equal "Japanese" w3m-language)
+		       (featurep 'w3m-ems)
+		       (= emacs-major-version 21))))
+	'utf-8
+      'iso-2022-7bit-ss2))
    (w3m-accept-japanese-characters 'w3m-euc-japan)
    (t 'w3m-iso-latin-1))
   "*Coding system used when reading from w3m processes."
@@ -1104,6 +1098,12 @@ when we implement the mailcap parser to set `w3m-content-type-alist'.")
 			  (eq 'w3m-browse-url
 			      (symbol-value 'browse-url-browser-function)))
 		      (cond
+		       ((and (memq system-type '(windows-nt ms-dos cygwin))
+			     (fboundp 'browse-url-default-windows-browser))
+			'browse-url-default-windows-browser)
+		       ((and (memq system-type '(darwin))
+			     (fboundp 'browse-url-default-macosx-browser))
+			'browse-url-default-macosx-browser)
 		       ((fboundp 'browse-url-default-browser)
 			'browse-url-default-browser)
 		       ((fboundp 'browse-url-netscape)
@@ -1359,7 +1359,10 @@ See also `w3m-filter-rules'."
   (when (and (featurep 'mule)
 	     (eq w3m-type 'w3m-m17n))
     (if (eq w3m-output-coding-system 'utf-8)
-	(and (w3m-mule-unicode-p) 'w3m-device-on-window-system-p)
+	(and (w3m-mule-unicode-p)
+	     (or (featurep 'xemacs)
+		 (< emacs-major-version 23))
+	     'w3m-device-on-window-system-p)
       t))
   "*Non-nil means replace symbols that the <_SYMBOL> tags lead into.
 It is meaningful only when the w3m-m17n command is used and (X)Emacs
@@ -3827,6 +3830,8 @@ If URL is specified, only the image with URL is toggled."
 		(when (and (w3m-url-valid iurl)
 			   (or (null safe-regexp)
 			       (string-match safe-regexp iurl))
+			   (not (and (not (w3m-url-local-p w3m-current-url))
+				     (w3m-url-local-p iurl)))
 			   (or (not w3m-current-ssl)
 			       (string-match "\\`\\(?:ht\\|f\\)tps://" iurl)
 			       allow-non-secure-images

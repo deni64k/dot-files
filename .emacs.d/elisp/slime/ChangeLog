@@ -1,3 +1,77 @@
+2009-09-03  Helmut Eller  <heller@common-lisp.net>
+
+	* slime.el (slime-net-close): set-process-query-on-exit-flag
+	doesn't exist in XEmacs.
+	(slime-make-net-buffer): For now, disable querying here.
+	Could also close the socket before killing the buffer.
+	(slime-buffer-processes): Deleted.
+
+2009-09-02  Stas Boukarev  <stassats@gmail.com>
+
+	* swank-lispworks.lisp (replace-strings-with-symbols): New function for
+	recursively interning and replacing strings in a list.
+	(arglist): Replace all strings in arglists with symbols.
+
+	* slime.el (slime-net-close): Do not query for process killing
+	confirmation before killing a connection buffer.
+	(slime-buffer-processes): New function for listing processes
+	associated with a buffer.
+
+2009-08-31  Helmut Eller  <heller@common-lisp.net>
+
+	Don't advice ccl::break-loop.
+	Should not be necessary as we can now use ccl:*break-hook*.
+
+	* swank-ccl.lisp ([advice] ccl::break-loop): Deleted.
+
+2009-08-31  Helmut Eller  <heller@common-lisp.net>
+
+	Keep note overlays in a global variable.
+	That's simpler and cheaper than scanning all buffers.
+
+	* slime.el (slime-note-overlays): New variable.
+	(slime-make-note-overlay, slime-remove-old-overlays): Use it.
+
+2009-08-27  Stas Boukarev  <stassats@gmail.com>
+
+	* slime.el (slime-remove-old-overlays): delete notes at the very beginning
+	of the buffer too. Thanks to Nick Levine.
+
+2009-08-22  Helmut Eller  <heller@common-lisp.net>
+
+	Speed up symbol completion.
+
+	* swank.lisp (all-completions): Don't call unparse-symbol
+	while matching.  That gets very slow in CCL's CCL package.
+	Just use symbol-name and compare with char-equal.
+	(prefix-match-p): Use char-equal.
+
+2009-08-21  Helmut Eller  <heller@common-lisp.net>
+
+	* slime.el (slime-transcript-start-hook)
+	(slime-transcript-stop-hook): New hooks.
+	(slime-eval-with-transcript): Use them.
+	(slime-eval-with-transcript-cont): Deleted.
+
+2009-08-19  Mark Evenson  <evenson@panix.com>
+
+	* swank-abcl.lisp: Accommodate the new Java/Lisp stack frame
+	abstraction in the upcoming abcl-0.16. (based on code from Tobias
+	Rittweiler).
+
+2009-08-18  Mark Evenson  <evenson@panix.com>
+
+	Add multithreading code for abcl-0.16. (Tobias Rittweiler)
+
+	* swank-abcl.lisp: A multithread implementation taking advantage
+	of the new synchronization primitives in abcl-0.16.
+
+	Restore working with abcl-0.15.
+
+	* swank-abcl.lisp: Remove the warm initialization code for
+	SWANK:COMPILER-CONDITION, as it is no longer needed for the
+	current release of ABCL.
+
 2009-08-16  StanisBaw Halik <sthalik@test123.ltd.pl>
 
 	* swank.lisp (init-global-stream-redirection): Continue even if

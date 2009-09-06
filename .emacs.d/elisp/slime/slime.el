@@ -1634,7 +1634,8 @@ line of the file."
   "Make a buffer suitable for a network process."
   (let ((buffer (generate-new-buffer name)))
     (with-current-buffer buffer
-      (buffer-disable-undo))
+      (buffer-disable-undo)
+      (set (make-local-variable 'kill-buffer-query-functions) nil))
     buffer))
 
 (defun slime-set-query-on-exit-flag (process)
@@ -2809,17 +2810,13 @@ compile with a debug setting of that number."
         (slime-remove-old-overlays)
         (mapc #'slime-overlay-note (slime-merge-notes-for-display notes))))))
 
+(defvar slime-note-overlays '()
+  "List of overlays created by `slime-make-note-overlay'")
+
 (defun slime-remove-old-overlays ()
-  "Delete the existing Slime overlays in the current buffer."
-  (dolist (buffer (slime-filter-buffers (lambda () slime-mode)))
-    (with-current-buffer buffer
-      (save-excursion
-        (save-restriction
-          (widen)                ; remove overlays within the whole buffer.
-          (goto-char (point-min))
-          (let ((o))
-            (while (setq o (slime-find-next-note))
-              (delete-overlay o))))))))
+  "Delete the existing note overlays."
+  (mapc #'delete-overlay slime-note-overlays)
+  (setq slime-note-overlays '()))
 
 (defun slime-filter-buffers (predicate)
   "Return a list of where PREDICATE returns true.
@@ -3122,6 +3119,7 @@ new overlay is created."
 (defun slime-make-note-overlay (note start end)
   (let ((overlay (make-overlay start end)))
     (overlay-put overlay 'slime-note note)
+    (push overlay slime-note-overlays)
     overlay))
 
 (defun slime-create-note-overlay (note start end severity message)
@@ -4199,8 +4197,7 @@ Note: If a prefix argument is in effect then the result will be
 inserted in the current buffer."
   (interactive (list (slime-read-from-minibuffer "Slime Eval: ")))
   (cond ((not current-prefix-arg)
-         (slime-eval-with-transcript `(swank:interactive-eval ,string) 
-                                     string))
+         (slime-eval-with-transcript `(swank:interactive-eval ,string)))
         (t
          (slime-eval-print string))))
 
@@ -4214,42 +4211,21 @@ inserted in the current buffer."
                       (destructuring-bind (output value) result
                         (insert output value)))))
 
-(defun slime-eval-with-transcript (form &optional msg no-popups cont)
-  "Eval FROM in Lisp.  Display output, if any, caused by the evaluation."
-  ;;(when msg (slime-insert-transcript-delimiter msg))
-  ;;(setq slime-repl-popup-on-output (not no-popups))
-  (setq cont (or cont #'slime-display-eval-result))
-  (slime-rex (cont (buffer (current-buffer))) (form)
-    ((:ok value) (slime-eval-with-transcript-cont t value cont buffer))
-    ((:abort) (slime-eval-with-transcript-cont nil nil nil buffer))))
+(defvar slime-transcript-start-hook nil
+  "Hook run before start an evalution.")
+(defvar slime-transcript-stop-hook nil
+  "Hook run after finishing a evalution.")
 
-;;(defun slime-insert-transcript-delimiter (string)
-;;  (with-current-buffer (slime-output-buffer)
-;;    (save-excursion
-;;      (goto-char slime-repl-input-start-mark)
-;;      (unless (bolp) (insert-before-markers "\n"))
-;;      (slime-propertize-region '(slime-transcript-delimiter t)
-;;        (insert-before-markers
-;;         ";;;; " (subst-char-in-string ?\n ?\ 
-;;                                       (substring string 0 
-;;                                                  (min 60 (length string))))
-;;         " ...\n"))
-;;      (assert (= (point) slime-repl-input-start-mark))
-;;      (slime-mark-output-start))
-;;    (slime-repl-show-maximum-output)))
-
-(defun slime-eval-with-transcript-cont (ok result cont buffer)
-  (run-with-timer 0.2 nil (lambda ()
-                            ;;(setq slime-repl-popup-on-output nil)
-                            ))
-  ;;(with-current-buffer (slime-output-buffer)
-  ;;  (save-excursion (slime-repl-insert-prompt))
-  ;;  (slime-repl-show-maximum-output))
-  (cond ((not ok)
-         (message "Evaluation aborted."))
-        (t
-         (with-current-buffer buffer
-           (funcall cont result)))))
+(defun slime-eval-with-transcript (form)
+  "Eval FROM in Lisp.  Display output, if any."
+  (run-hooks 'slime-transcript-start-hook)
+  (slime-rex () (form)
+    ((:ok value)
+     (run-hooks 'slime-transcript-stop-hook)
+     (slime-display-eval-result value))
+    ((:abort)
+     (run-hooks 'slime-transcript-stop-hook)
+     (message "Evaluation aborted."))))
         
 (defun slime-eval-describe (form)
   "Evaluate FORM in Lisp and display the result in a new buffer."
@@ -4257,8 +4233,7 @@ inserted in the current buffer."
                                        (slime-current-package))))
 
 (defvar slime-description-autofocus nil
-  "If NIL (the default) Slime description buffers do not grab
-focus automatically.")
+  "If non-nil select description windows on display.")
 
 (defun slime-show-description (string package)
   ;; So we can have one description buffer open per connection. Useful

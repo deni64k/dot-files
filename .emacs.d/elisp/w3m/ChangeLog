@@ -1,3 +1,49 @@
+2009-09-02  Hideyuki SHIRAI  <shirai@meadowy.org>
+
+	* w3m-image.el (w3m-imagick-convert-program-available-p): If someone
+	set `w3m-imagick-convert-program' to nil before load emacs-w3m, do not
+	show warning message for ImageMagick's `convert'.
+
+2009-09-02  Katsumi Yamaoka  <yamaoka@jpl.org>
+
+	* w3m-mail.el (w3m-mail-embed-base-url, w3m-mail-compose-with-mml)
+	(w3m-mail-compose-with-vm): Don't use
+	default-enable-multibyte-characters that is obsolete in Emacs 23.2.
+
+2009-09-01  Hideyuki SHIRAI  <shirai@meadowy.org>
+
+	* w3m.el (w3m-content-type-alist): Support
+	`browse-url-default-windows|macosx-browser'. Thanks to Leo.
+	Cf. [emacs-w3m:11035].
+
+	* w3m-ems.el (w3m-form-button, w3m-form-button-mouse)
+	(w3m-form-button-pressed, w3m-tab-unselected)
+	(w3m-tab-unselected-retrieving, w3m-tab-unselected-unseen)
+	(w3m-tab-selected, w3m-tab-selected-retrieving, w3m-tab-background)
+	(w3m-tab-selected-background, w3m-tab-mouse): Add type ns. Thanks to
+	Leo. Cf. [emacs-w3m:11034].
+
+2009-08-25  Hideyuki SHIRAI  <shirai@meadowy.org>
+
+	* w3m.el (w3m-toggle-inline-images-internal): Do not display image, if
+	its url is local and current url is not local.
+
+2009-08-24  ARISAWA Akihiro  <ari@mbf.sphere.ne.jp>
+
+	* w3m.el (w3m-output-coding-system): Use `utf-8' except for emacs-21
+	under Japaese environment.
+
+2009-08-19  Hideyuki SHIRAI  <shirai@meadowy.org>
+
+	* w3m.el (w3m-use-symbol): Set nil with emacs-23 or later.
+	cf. [emacs-w3m:11002].
+
+2009-08-18  Hideyuki SHIRAI  <shirai@meadowy.org>
+
+	* w3m-util.el (w3m-puny-decode-url): Decode the part of hostname only.
+	Add doc-strings.
+	(w3m-puny-encode-url): Add doc-strings.
+
 2009-08-17  Hideyuki SHIRAI  <shirai@meadowy.org>
 
 	* w3m.el (w3m-puny-utf-16be): New variable.

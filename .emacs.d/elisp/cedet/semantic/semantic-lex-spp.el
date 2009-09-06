@@ -2,7 +2,7 @@
 
 ;;; Copyright (C) 2006, 2007, 2008, 2009 Eric M. Ludlam
 
-;; X-CVS: $Id: semantic-lex-spp.el,v 1.40 2009/08/09 01:20:37 zappo Exp $
+;; X-CVS: $Id: semantic-lex-spp.el,v 1.45 2009/09/02 23:45:28 zappo Exp $
 
 ;; This file is not part of GNU Emacs.
 
@@ -379,42 +379,53 @@ ARGVALUES are values for any arg list, or nil."
 ;; Argument lists are saved as a lexical token at the beginning
 ;; of a replacement value.
 
-(defun semantic-lex-spp-one-token-to-txt (tok)
+(defun semantic-lex-spp-one-token-to-txt (tok &optional blocktok)
   "Convert the token TOK into a string.
 If TOK is made of multiple tokens, convert those to text.  This
 conversion is needed if a macro has a merge symbol in it that
 combines the text of two previously distinct symbols.  For
 exampe, in c:
 
-#define (a,b) a ## b;"
+#define (a,b) a ## b;
+
+If optional string BLOCKTOK matches the expanded value, then do not
+continue processing recursively."
   (let ((txt (semantic-lex-token-text tok))
 	(sym nil)
 	)
-    (cond ((and (eq (car tok) 'symbol)
-		(setq sym (semantic-lex-spp-symbol txt))
-		(not (semantic-lex-spp-macro-with-args (symbol-value sym)))
-		)
-	   ;; Now that we have a symbol,
-	   (let ((val (symbol-value sym)))
-	     (cond ((and (consp val)
-			 (symbolp (car val)))
-		    (semantic-lex-spp-one-token-to-txt val))
-		   ((and (consp val)
-			 (consp (car val))
-			 (symbolp (car (car val))))
-		    (mapconcat (lambda (subtok)
-				 (semantic-lex-spp-one-token-to-txt subtok))
-			       val
-			       ""))
-		   ;; If val is nil, that's probably wrong.
-		   ;; Found a system header case where this was true.
-		   ((null val) "")
-		   ;; Debug wierd stuff.
-		   (t (debug)))
-	     ))
-	  ((stringp txt)
-	   txt)
-	  (t nil))
+    (cond
+     ;; Recursion prevention
+     ((and (stringp blocktok) (string= txt blocktok))
+      blocktok)
+     ;; A complex symbol
+     ((and (eq (car tok) 'symbol)
+	   (setq sym (semantic-lex-spp-symbol txt))
+	   (not (semantic-lex-spp-macro-with-args (symbol-value sym)))
+	   )
+      ;; Now that we have a symbol,
+      (let ((val (symbol-value sym)))
+	(cond
+	 ;; This is another lexical token.
+	 ((and (consp val)
+	       (symbolp (car val)))
+	  (semantic-lex-spp-one-token-to-txt val txt))
+	 ;; This is a list of tokens.
+	 ((and (consp val)
+	       (consp (car val))
+	       (symbolp (car (car val))))
+	  (mapconcat (lambda (subtok)
+		       (semantic-lex-spp-one-token-to-txt subtok))
+		     val
+		     ""))
+	 ;; If val is nil, that's probably wrong.
+	 ;; Found a system header case where this was true.
+	 ((null val) "")
+	 ;; Debug wierd stuff.
+	 (t (debug)))
+	))
+     ((stringp txt)
+      txt)
+     (t nil))
     ))
 
 (defun semantic-lex-spp-macro-with-args (val)
@@ -710,7 +721,7 @@ Disable this only to prevent recursive expansion issues.")
 (defun semantic-lex-spp-analyzer-push-tokens-for-symbol (str beg end)
   "Push lexical tokens for the symbol or keyword STR.
 STR occurs in the current buffer between BEG and END."
-  (let (sym val)
+  (let (sym val count)
     (cond
      ;;
      ;; It is a macro.  Prepare for a replacement.
@@ -799,19 +810,124 @@ Don't go past MAX."
 (defun semantic-lex-spp-stream-for-arglist (token)
   "Lex up the contents of the arglist TOKEN.
 Parsing starts inside the parens, and ends at the end of TOKEN."
-  (save-excursion
-    (let ((end (semantic-lex-token-end token))
-	  (fresh-toks nil)
-	  (toks nil))
-      (goto-char (semantic-lex-token-start token))
-      ;; A cheat for going into the semantic list.
-      (forward-char 1)
-      (setq fresh-toks (semantic-lex-spp-stream-for-macro (1- end)))
-      (dolist (tok fresh-toks)
-	(when (memq (semantic-lex-token-class tok) '(symbol semantic-list))
-	  (setq toks (cons tok toks))))
-      (nreverse toks))
-    ))
+  (let ((end (semantic-lex-token-end token))
+	(fresh-toks nil)
+	(toks nil))
+    (save-excursion
+
+      (if (stringp (nth 1 token))
+	  ;; If the 2nd part of the token is a string, then we have
+	  ;; a token specifically extracted from a buffer.  Possibly
+	  ;; a different buffer.  This means we need to do something
+	  ;; nice to parse its contents.
+	  (let ((txt (semantic-lex-token-text token)))
+	    (semantic-lex-spp-lex-text-string
+	     (substring txt 1 (1- (length txt)))))
+
+	;; This part is like the original
+	(goto-char (semantic-lex-token-start token))
+	;; A cheat for going into the semantic list.
+	(forward-char 1)
+	(setq fresh-toks (semantic-lex-spp-stream-for-macro (1- end)))
+	(dolist (tok fresh-toks)
+	  (when (memq (semantic-lex-token-class tok) '(symbol semantic-list))
+	    (setq toks (cons tok toks))))
+
+	(nreverse toks)))))
+
+(defun semantic-lex-spp-lex-text-string (text)
+  "Lex the text string TEXT using the current buffer's state.
+Use this to parse text extracted from a macro as if it came from
+the current buffer.  Since the lexer is designed to only work in
+a buffer, we need to create a new buffer, and populate it with rules
+and variable state from the current buffer."
+  ;; @TODO - will this fcn recurse?
+  (let* ((buf (get-buffer-create " *SPP parse hack*"))
+	 (mode major-mode)
+	 (fresh-toks nil)
+	 (toks nil)
+	 (origbuff (current-buffer))
+	 (important-vars '(semantic-lex-spp-macro-symbol-obarray
+			   semantic-lex-spp-project-macro-symbol-obarray
+			   semantic-lex-spp-dynamic-macro-symbol-obarray
+			   semantic-lex-spp-dynamic-macro-symbol-obarray-stack
+			   semantic-lex-spp-expanded-macro-stack
+			   ))
+	 )
+    (save-excursion
+      (set-buffer buf)
+      (erase-buffer)
+      ;; Below is a painful hack to make sure everything is setup correctly.
+      (when (not (eq major-mode mode))
+	(funcall mode)
+	;; Hack in mode-local
+	(activate-mode-local-bindings)
+	;; CHEATER!  The following 3 lines are from
+	;; `semantic-new-buffer-fcn', but we don't want to turn
+	;; on all the other annoying modes for this little task.
+	(setq semantic-new-buffer-fcn-was-run t)
+	(semantic-lex-init)
+	(semantic-clear-toplevel-cache)
+	(remove-hook 'semantic-lex-reset-hooks 'semantic-lex-spp-reset-hook
+		     t)
+	)
+
+      ;; Second Cheat: copy key variables reguarding macro state from the
+      ;; the originating buffer we are parsing.  We need to do this every time
+      ;; since the state changes.
+      (dolist (V important-vars)
+	(set V (semantic-buffer-local-value V origbuff)))
+      (insert text)
+      (goto-char (point-min))
+
+      (setq fresh-toks (semantic-lex-spp-stream-for-macro (point-max))))
+
+    (dolist (tok fresh-toks)
+      (when (memq (semantic-lex-token-class tok) '(symbol semantic-list))
+	(setq toks (cons tok toks))))
+
+    (nreverse toks)))
+
+;;;; FIRST DRAFT
+;; This is the fist version of semantic-lex-spp-stream-for-arglist
+;; that worked pretty well.  It doesn't work if the TOKEN was derived
+;; from some other buffer, in which case it can get the wrong answer
+;; or throw an error if the token location in the originating buffer is
+;; larger than the current buffer.
+;;(defun semantic-lex-spp-stream-for-arglist-orig (token)
+;;  "Lex up the contents of the arglist TOKEN.
+;; Parsing starts inside the parens, and ends at the end of TOKEN."
+;;  (save-excursion
+;;    (let ((end (semantic-lex-token-end token))
+;;	  (fresh-toks nil)
+;;	  (toks nil))
+;;      (goto-char (semantic-lex-token-start token))
+;;      ;; A cheat for going into the semantic list.
+;;      (forward-char 1)
+;;      (setq fresh-toks (semantic-lex-spp-stream-for-macro (1- end)))
+;;      (dolist (tok fresh-toks)
+;;	(when (memq (semantic-lex-token-class tok) '(symbol semantic-list))
+;;	  (setq toks (cons tok toks))))
+;;      (nreverse toks))
+;;    ))
+
+;;;; USING SPLIT
+;; This doesn't work, because some arguments passed into a macro
+;; might contain non-simple symbol words, which this doesn't handle.
+;;
+;; Thus, you need a full lex to occur.
+;; (defun semantic-lex-spp-stream-for-arglist-split (token)
+;;   "Lex up the contents of the arglist TOKEN.
+;; Parsing starts inside the parens, and ends at the end of TOKEN."
+;;   (let* ((txt (semantic-lex-token-text token))
+;; 	 (split (split-string (substring txt 1 (1- (length txt)))
+;; 			      "(), " t))
+;; 	 ;; Hack for lexing.
+;; 	 (semantic-lex-spp-analyzer-push-tokens-for-symbol nil))
+;;     (dolist (S split)
+;;       (semantic-lex-spp-analyzer-push-tokens-for-symbol S 0 1))
+;;     (reverse semantic-lex-spp-analyzer-push-tokens-for-symbol)))
+
 
 (defun semantic-lex-spp-stream-for-macro (eos)
   "Lex up a stream of tokens for a #define statement.
