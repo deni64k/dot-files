@@ -8,7 +8,6 @@
 /chart.el/1.19/Wed Jul 22 19:09:21 2009//
 /eieio-base.el/1.28/Wed Jul 22 19:09:21 2009//
 /eieio-custom.el/1.28/Wed Jul 22 19:09:21 2009//
-/eieio-datadebug.el/1.5/Wed Jul 22 19:09:21 2009//
 /eieio-doc.el/1.20/Wed Jul 22 19:09:21 2009//
 /eieio-load.el/1.2/Wed Jul 22 19:09:21 2009//
 /eieio-opt.el/1.39/Wed Jul 22 19:09:21 2009//
@@ -22,7 +21,8 @@
 /lmcompile.el/1.10/Wed Jul 22 19:09:21 2009//
 /psql.el/1.6/Wed Jul 22 19:09:21 2009//
 /tree.el/1.11/Wed Jul 22 19:09:21 2009//
-/eieio-comp.el/1.15/Sun Aug  2 20:18:22 2009//
 /eieio-tests.el/1.48/Sun Sep  6 21:44:29 2009//
-/eieio.el/1.188/Sun Sep  6 21:44:29 2009//
+/eieio-comp.el/1.16/Thu Sep 24 22:01:11 2009//
+/eieio-datadebug.el/1.6/Thu Sep 24 22:01:11 2009//
+/eieio.el/1.189/Thu Sep 24 22:01:11 2009//
 D

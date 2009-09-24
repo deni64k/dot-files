@@ -3116,19 +3116,21 @@ that symbols accessible in the current package go first."
       (with-output-to-string (*standard-output*)
         (describe-definition (parse-symbol-or-lose name) kind)))))
 
-(defslimefun documentation-symbol (symbol-name &optional default)
+(defslimefun documentation-symbol (symbol-name)
   (with-buffer-syntax ()
     (multiple-value-bind (sym foundp) (parse-symbol symbol-name)
       (if foundp
           (let ((vdoc (documentation sym 'variable))
                 (fdoc (documentation sym 'function)))
-            (or (and (or vdoc fdoc)
-                     (concatenate 'string
-                                  fdoc
-                                  (and vdoc fdoc '(#\Newline #\Newline))
-                                  vdoc))
-                default))
-          default))))
+            (with-output-to-string (string)
+              (format string "Documentation for the symbol ~a:~2%" sym)
+              (unless (or vdoc fdoc)
+                (format string "Not documented." ))
+              (when vdoc
+                (format string "Variable:~% ~a~2%" vdoc))
+              (when fdoc
+                (format string "Function:~% ~a" fdoc))))
+          (format nil "No such symbol, ~a." symbol-name)))))
 
 
 ;;;; Package Commands
@@ -3233,19 +3235,32 @@ DSPEC is a string and LOCATION a source location. NAME is a string."
     (unless error
       (mapcar #'xref>elisp (find-definitions sexp)))))
 
+(defun xref-doit (type symbol)
+  (ecase type
+    (:calls (who-calls symbol))
+    (:calls-who (calls-who symbol))
+    (:references (who-references symbol))
+    (:binds (who-binds symbol))
+    (:sets (who-sets symbol))
+    (:macroexpands (who-macroexpands symbol))
+    (:specializes (who-specializes symbol))
+    (:callers (list-callers symbol))
+    (:callees (list-callees symbol))))
+
 (defslimefun xref (type name)
-  (let ((symbol (parse-symbol-or-lose name *buffer-package*)))
-    (mapcar #'xref>elisp
-            (ecase type
-              (:calls (who-calls symbol))
-              (:calls-who (calls-who symbol))
-              (:references (who-references symbol))
-              (:binds (who-binds symbol))
-              (:sets (who-sets symbol))
-              (:macroexpands (who-macroexpands symbol))
-              (:specializes (who-specializes symbol))
-              (:callers (list-callers symbol))
-              (:callees (list-callees symbol))))))
+  (with-buffer-syntax ()
+    (let* ((symbol (parse-symbol-or-lose name))
+           (xrefs  (xref-doit type symbol)))
+      (if (eq xrefs :not-implemented)
+          :not-implemented
+          (mapcar #'xref>elisp xrefs)))))
+
+(defslimefun xrefs (types name)
+  (loop for type in types
+        for xrefs = (xref type name)
+        when (and (not (eq :not-implemented xrefs))
+                  (not (null xrefs)))
+          collect (cons type xrefs)))
 
 (defun xref>elisp (xref)
   (destructuring-bind (name loc) xref

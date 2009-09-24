@@ -2,7 +2,7 @@
 
 ;;; Copyright (C) 2006, 2007, 2008, 2009 Eric M. Ludlam
 
-;; X-CVS: $Id: semantic-lex-spp.el,v 1.45 2009/09/02 23:45:28 zappo Exp $
+;; X-CVS: $Id: semantic-lex-spp.el,v 1.49 2009/09/24 02:10:31 zappo Exp $
 
 ;; This file is not part of GNU Emacs.
 
@@ -28,7 +28,7 @@
 ;;
 ;; A pre-processor identifies lexical syntax mixed in with another language
 ;; and replaces some keyword tokens with streams of alternate tokens.
-;; 
+;;
 ;; If you use SPP in your language, be sure to specify this in your
 ;; semantic language setup function:
 ;;
@@ -63,11 +63,11 @@
 ;;
 ;; #define NN namespace nn {
 ;; #define NN_END }
-;; 
+;;
 ;; NN
 ;;   int mydecl() {}
 ;; NN_END
-;; 
+;;
 
 (require 'semantic-lex)
 
@@ -248,7 +248,7 @@ REPLACEMENT a string that would be substituted in for NAME."
       (setq spec  (car specs)
             specs (cdr specs))
       (semantic-lex-spp-symbol-set
-       (car spec) 
+       (car spec)
        (cdr spec)
        semantic-lex-spp-macro-symbol-obarray))
     semantic-lex-spp-macro-symbol-obarray))
@@ -346,7 +346,7 @@ ARGVALUES are values for any arg list, or nil."
      (semantic-lex-token (or (semantic-lex-keyword-p val) 'symbol)
 			 beg end
 			 val)))
-   
+
    ;; Ok, the rest of these are various types of syntax.
    ;; Conveniences for users that type in their symbol table.
    ((semantic-lex-spp-extract-regex-and-compare
@@ -442,7 +442,7 @@ that will somehow gain a much longer token stream.
 ARGVALUES are values for any arg list, or nil.
 See comments in code for information about how token streams are processed
 and what valid VAL values are."
-  
+
   ;; A typical VAL value might be either a stream of tokens.
   ;; Tokens saved into a macro stream always includes the text from the
   ;; buffer, since the locations specified probably don't represent
@@ -598,7 +598,7 @@ and what valid VAL values are."
 	   (semantic-lex-token (semantic-lex-token-class v) beg end txt))
 	  )
 	 )))
-      
+
     ;; CASE 2: The arg list we pushed onto the symbol table
     ;;         must now be removed.
     (dolist (A arglist)
@@ -835,14 +835,18 @@ Parsing starts inside the parens, and ends at the end of TOKEN."
 
 	(nreverse toks)))))
 
+(defvar semantic-lex-spp-hack-depth 0
+  "Current depth of recursive calls to `semantic-lex-spp-lex-text-string'.")
+
 (defun semantic-lex-spp-lex-text-string (text)
   "Lex the text string TEXT using the current buffer's state.
 Use this to parse text extracted from a macro as if it came from
 the current buffer.  Since the lexer is designed to only work in
 a buffer, we need to create a new buffer, and populate it with rules
 and variable state from the current buffer."
-  ;; @TODO - will this fcn recurse?
-  (let* ((buf (get-buffer-create " *SPP parse hack*"))
+  (let* ((semantic-lex-spp-hack-depth (1+ semantic-lex-spp-hack-depth))
+	 (buf (get-buffer-create (format " *SPP parse hack %d*"
+					 semantic-lex-spp-hack-depth)))
 	 (mode major-mode)
 	 (fresh-toks nil)
 	 (toks nil)
@@ -859,20 +863,27 @@ and variable state from the current buffer."
       (erase-buffer)
       ;; Below is a painful hack to make sure everything is setup correctly.
       (when (not (eq major-mode mode))
-	(funcall mode)
-	;; Hack in mode-local
-	(activate-mode-local-bindings)
-	;; CHEATER!  The following 3 lines are from
-	;; `semantic-new-buffer-fcn', but we don't want to turn
-	;; on all the other annoying modes for this little task.
-	(setq semantic-new-buffer-fcn-was-run t)
-	(semantic-lex-init)
-	(semantic-clear-toplevel-cache)
-	(remove-hook 'semantic-lex-reset-hooks 'semantic-lex-spp-reset-hook
-		     t)
-	)
+	(save-match-data
 
-      ;; Second Cheat: copy key variables reguarding macro state from the
+	  ;; Protect against user-hooks that throw errors.
+	  (condition-case nil
+	      (funcall mode)
+	    (error nil))
+
+	  ;; Hack in mode-local
+	  (activate-mode-local-bindings)
+
+	  ;; CHEATER!  The following 3 lines are from
+	  ;; `semantic-new-buffer-fcn', but we don't want to turn
+	  ;; on all the other annoying modes for this little task.
+	  (setq semantic-new-buffer-fcn-was-run t)
+	  (semantic-lex-init)
+	  (semantic-clear-toplevel-cache)
+	  (remove-hook 'semantic-lex-reset-hooks 'semantic-lex-spp-reset-hook
+		       t)
+	  ))
+
+      ;; Second Cheat: copy key variables regarding macro state from the
       ;; the originating buffer we are parsing.  We need to do this every time
       ;; since the state changes.
       (dolist (V important-vars)
@@ -1187,7 +1198,7 @@ If BUFFER is not provided, use the current buffer."
 (add-hook
  'edebug-setup-hook
  #'(lambda ()
-     
+
      (def-edebug-spec define-lex-spp-macro-declaration-analyzer
        (&define name stringp stringp form def-body)
        )
@@ -1201,7 +1212,7 @@ If BUFFER is not provided, use the current buffer."
        )
      ))
 
-  
+
 (provide 'semantic-lex-spp)
 
 ;;; semantic-lex-spp.el ends here

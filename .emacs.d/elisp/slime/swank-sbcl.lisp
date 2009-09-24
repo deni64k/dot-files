@@ -631,6 +631,7 @@ compiler state."
                                         :emacs-position position))
                  (multiple-value-bind (output-file warningsp failurep)
                      (compile-file temp-file-name)
+                   (declare (ignore warningsp))
                    (unless failurep
                      (funcall cont output-file)))))))
       (with-open-file (s temp-file-name :direction :output :if-exists :error)
@@ -1488,9 +1489,11 @@ stack."
          (when (eq timeout t) (return (values nil t)))
          ;; FIXME: with-timeout doesn't work properly on Darwin
          #+linux
-         (handler-case (sb-ext:with-timeout 0.2
-                         (sb-thread:condition-wait (mailbox.waitqueue mbox)
-                                                   mutex))
+         (handler-case 
+             (let ((*break-on-signals* nil))
+               (sb-ext:with-timeout 0.2
+                 (sb-thread:condition-wait (mailbox.waitqueue mbox)
+                                           mutex)))
            (sb-ext:timeout ()))
          #-linux  
          (sb-thread:condition-wait (mailbox.waitqueue mbox)

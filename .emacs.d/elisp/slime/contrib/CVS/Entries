@@ -18,7 +18,6 @@
 /slime-parse.el/1.23/Wed Jul 22 19:09:22 2009//
 /slime-presentation-streams.el/1.2/Wed Jul 22 19:09:22 2009//
 /slime-presentations.el/1.23/Wed Jul 22 19:09:22 2009//
-/slime-references.el/1.4/Wed Jul 22 19:09:22 2009//
 /slime-sbcl-exts.el/1.2/Wed Jul 22 19:09:22 2009//
 /slime-scheme.el/1.1/Wed Jul 22 19:09:22 2009//
 /slime-scratch.el/1.5/Wed Jul 22 19:09:22 2009//
@@ -45,13 +44,16 @@
 /swank.rb/1.2/Wed Jul 22 19:09:22 2009//
 /slime-fuzzy.el/1.12/Thu Aug 13 20:56:39 2009//
 /swank-fancy-inspector.lisp/1.22/Thu Aug 13 20:56:39 2009//
-/slime-autodoc.el/1.18/Mon Aug 17 19:55:29 2009//
 /slime-fancy.el/1.9/Mon Aug 17 19:55:29 2009//
 /slime-typeout-frame.el/1.8/Mon Aug 17 19:55:29 2009//
 /swank-kawa.scm/1.19/Mon Aug 17 19:55:30 2009//
-/ChangeLog/1.242/Sun Sep  6 21:44:38 2009//
 /inferior-slime.el/1.8/Sun Sep  6 21:44:38 2009//
 /slime-c-p-c.el/1.12/Sun Sep  6 21:44:38 2009//
-/slime-repl.el/1.24/Sun Sep  6 21:44:38 2009//
 /swank-arglists.lisp/1.34/Sun Sep  6 21:44:38 2009//
+/ChangeLog/1.247/Thu Sep 24 22:11:16 2009//
+/slime-autodoc.el/1.20/Thu Sep 24 22:11:16 2009//
+/slime-references.el/1.5/Thu Sep 24 22:11:16 2009//
+/slime-repl.el/1.25/Thu Sep 24 22:11:16 2009//
+/slime-sprof.el/1.1/Mon Sep 21 19:08:29 2009//
+/swank-sprof.lisp/1.1/Mon Sep 21 19:08:29 2009//
 D

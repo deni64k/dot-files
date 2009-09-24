@@ -538,6 +538,8 @@ The string is periodically updated by an idle timer."))
 (defvar slime-parent-bindings
   '(("\M-."      slime-edit-definition)
     ("\M-,"      slime-pop-find-definition-stack)
+    ("\M-_"      slime-edit-uses)    ; for German layout
+    ("\M-?"      slime-edit-uses)    ; for USian layout
     ("\C-x4." 	 slime-edit-definition-other-window)
     ("\C-x5." 	 slime-edit-definition-other-frame)
     ("\C-x\C-e"  slime-eval-last-expression)
@@ -2870,29 +2872,8 @@ This operation is \"lossy\" in the broad sense but not for display purposes."
       (setf (getf new-note :severity) new-severity)
       new-note)))
 
-;; XXX: unused function
-(defun slime-intersperse (element list)
-  "Intersperse ELEMENT between each element of LIST."
-  (if (null list) 
-      '()
-    (cons (car list)
-          (mapcan (lambda (x) (list element x)) (cdr list)))))
-
 (defun slime-notes-in-same-location-p (a b)
   (equal (slime-note.location a) (slime-note.location b)))
-
-(defun slime-group-similar (similar-p list)
-  "Return the list of lists of 'similar' adjacent elements of LIST.
-The function SIMILAR-P is used to test for similarity.
-The order of the input list is preserved."
-  (if (null list)
-      nil
-    (let ((accumulator (list (list (car list)))))
-      (dolist (x (cdr list))
-        (if (funcall similar-p x (caar accumulator))
-            (push x (car accumulator))
-          (push (list x) accumulator)))
-      (reverse (mapcar #'reverse accumulator)))))
 
 
 ;;;;; Compiler notes list
@@ -3066,22 +3047,6 @@ file/buffer name, line, and column number."
                                  ((> line1 line2) nil)
                                  (t (< col1 col2)))))))))
             locs)))
-
-(defun slime-alistify (list key test)
-  "Partition the elements of LIST into an alist.
-KEY extracts the key from an element and TEST is used to compare
-keys."
-  (declare (type function key))
-  (let ((alist '()))
-    (dolist (e list)
-      (let* ((k (funcall key e))
-	     (probe (assoc* k alist :test test)))
-	(if probe
-	    (push e (cdr probe))
-            (push (cons k (list e)) alist))))
-    ;; Put them back in order.
-    (loop for (key . value) in (reverse alist)
-          collect (cons key (reverse value)))))
 
 (defun slime-note.severity (note)
   (plist-get note :severity))
@@ -4002,7 +3967,7 @@ alist but ignores CDRs."
   "Lookup the definition of the name at point.  
 If there's no name at point, or a prefix argument is given, then the
 function name is prompted."
-  (interactive (list (slime-read-symbol-name "Name: ")))
+  (interactive (list (slime-read-symbol-name "Edit Definition of: ")))
   (or (run-hook-with-args-until-success 'slime-edit-definition-hooks 
                                         name where)
       (slime-edit-definition-cont (slime-find-definitions name)
@@ -4022,6 +3987,29 @@ function name is prompted."
            (slime-push-definition-stack)
            (slime-show-xrefs file-alist 'definition name
                              (slime-current-package))))))
+
+;;; FIXME. TODO: Would be nice to group the symbols (in each
+;;;              type-group) by their home-package.
+(defun slime-edit-uses (symbol)
+  "Lookup all the uses of SYMBOL."
+  (interactive (list (slime-read-symbol-name "Edit Uses of: ")))
+  (slime-xrefs '(:calls :macroexpands
+                 :binds :references :sets
+                 :specializes) 
+               symbol
+               #'(lambda (xrefs type symbol package snapshot)
+                   (cond 
+                     ((null xrefs)
+                      (message "No xref information found for %s." symbol))
+                     ((and (slime-length= xrefs 1)          ; one group
+                           (slime-length= (cdar  xrefs) 1)) ; one ref in group
+                      (destructuring-bind (_ (_ loc)) (first xrefs)
+                        (slime-push-definition-stack)
+                        (slime-pop-to-location loc)))
+                     (t
+                      (slime-push-definition-stack)
+                      (slime-show-xref-buffer xrefs type symbol 
+                                              package snapshot))))))
 
 (defun slime-analyze-xrefs (xrefs)
   "Find common filenames in XREFS.
@@ -4696,7 +4684,7 @@ If PACKAGE is NIL, then search in all packages."
   (when (not symbol-name)
     (error "No symbol given"))
   (slime-eval-describe 
-   `(swank:documentation-symbol ,symbol-name "(not documented)")))
+   `(swank:documentation-symbol ,symbol-name)))
 
 (defun slime-describe-function (symbol-name)
   (interactive (list (slime-read-symbol-name "Describe symbol: ")))
@@ -4883,6 +4871,15 @@ source-location."
   ;; Remove the final newline to prevent accidental window-scrolling
   (backward-delete-char 1))
 
+(defun slime-show-xref-buffer (xrefs type symbol package emacs-snapshot)
+  (slime-with-xref-buffer (type symbol package emacs-snapshot)
+    (slime-insert-xrefs xrefs)
+    (goto-char (point-min))
+    (forward-line)
+    (skip-chars-forward " \t")
+    (setq slime-next-location-function 'slime-goto-next-xref)
+    (setq slime-xref-last-buffer (current-buffer ))))
+
 (defvar slime-next-location-function nil
   "Function to call for going to the next location.")
 
@@ -4894,13 +4891,7 @@ This is used by `slime-goto-next-xref'")
   "Show the results of an XREF query."
   (if (null xrefs)
       (message "No references found for %s." symbol)
-    (slime-with-xref-buffer (type symbol package emacs-snapshot)
-      (slime-insert-xrefs xrefs)
-      (goto-char (point-min))
-      (forward-line)
-      (skip-chars-forward " \t")
-      (setq slime-next-location-function 'slime-goto-next-xref)
-      (setq slime-xref-last-buffer (current-buffer )))))
+      (slime-show-xref-buffer xrefs type symbol package emacs-snapshot)))
 
 
 ;;;;; XREF commands
@@ -4950,15 +4941,45 @@ This is used by `slime-goto-next-xref'")
   (interactive (list (slime-read-symbol-name "List callees: ")))
   (slime-xref :callees symbol-name))
 
-(defun slime-xref (type symbol)
+(defun slime-xref (type symbol &optional continuation)
   "Make an XREF request to Lisp."
   (slime-eval-async
    `(swank:xref ',type ',symbol)
-   (slime-rcurry
-    (lambda (result type symbol package snapshot)
-      (let ((file-alist (cadr (slime-analyze-xrefs result))))
-         (slime-show-xrefs file-alist type symbol package snapshot)))
-    type symbol (slime-current-package) (slime-current-emacs-snapshot))))
+   (slime-rcurry (lambda (result type symbol package snapshot cont)
+                   (slime-check-xref-implemented type result)
+                   (let ((file-alist (cadr (slime-analyze-xrefs result))))
+                     (funcall (or cont 'slime-show-xrefs)
+                              file-alist type symbol package snapshot)))
+                 type 
+                 symbol 
+                 (slime-current-package)
+                 (slime-current-emacs-snapshot)
+                 continuation)))
+
+(defun slime-check-xref-implemented (type xrefs)
+  (when (eq xrefs :not-implemented)
+    (error "%s is not implemented yet on %s." 
+           (slime-xref-type type)
+           (slime-lisp-implementation-name))))
+
+(defun slime-xref-type (type)
+  (format "who-%s" (slime-cl-symbol-name type)))
+
+(defun slime-xrefs (types symbol &optional continuation)
+  "Make multiple XREF requests at once."
+  (slime-eval-async
+   `(swank:xrefs ',types ',symbol)
+   (slime-rcurry (lambda (result types symbol package snapshot cont)
+                   (funcall (or cont 'slime-show-xrefs)
+                            (slime-map-alist #'slime-xref-type 
+                                             #'identity 
+                                             result)
+                            types symbol package snapshot))
+                 types 
+                 symbol 
+                 (slime-current-package)
+                 (slime-current-emacs-snapshot)
+                 continuation)))
 
 
 ;;;;; XREF navigation
@@ -8241,6 +8262,55 @@ Reconnect afterwards."
     
 
 ;;;; Utilities
+
+;;;; List frobbing
+
+(defun slime-map-alist (car-fn cdr-fn alist)
+  "Map over ALIST, calling CAR-FN on the car, and CDR-FN on the
+cdr of each entry."
+  (mapcar #'(lambda (entry)
+              (cons (funcall car-fn (car entry))
+                    (funcall cdr-fn (cdr entry))))
+          alist))
+
+;; XXX: unused function
+(defun slime-intersperse (element list)
+  "Intersperse ELEMENT between each element of LIST."
+  (if (null list) 
+      '()
+    (cons (car list)
+          (mapcan (lambda (x) (list element x)) (cdr list)))))
+
+;;; FIXME: this looks almost slime `slime-alistify', perhaps the two
+;;;        functions can be merged.
+(defun slime-group-similar (similar-p list)
+  "Return the list of lists of 'similar' adjacent elements of LIST.
+The function SIMILAR-P is used to test for similarity.
+The order of the input list is preserved."
+  (if (null list)
+      nil
+    (let ((accumulator (list (list (car list)))))
+      (dolist (x (cdr list))
+        (if (funcall similar-p x (caar accumulator))
+            (push x (car accumulator))
+          (push (list x) accumulator)))
+      (reverse (mapcar #'reverse accumulator)))))
+
+(defun slime-alistify (list key test)
+  "Partition the elements of LIST into an alist.
+KEY extracts the key from an element and TEST is used to compare
+keys."
+  (declare (type function key))
+  (let ((alist '()))
+    (dolist (e list)
+      (let* ((k (funcall key e))
+	     (probe (assoc* k alist :test test)))
+	(if probe
+	    (push e (cdr probe))
+            (push (cons k (list e)) alist))))
+    ;; Put them back in order.
+    (loop for (key . value) in (reverse alist)
+          collect (cons key (reverse value)))))
 
 ;;;;; Misc.
 

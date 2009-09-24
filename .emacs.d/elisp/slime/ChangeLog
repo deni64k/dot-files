@@ -1,3 +1,126 @@
+2009-09-24  Stas Boukarev  <stassats@gmail.com>
+
+	* swank-sbcl.lisp (swank-compile-string): Ignore unused variable
+	warningsp.
+
+2009-09-23  Helmut Eller  <heller@common-lisp.net>
+
+	* swank-sbcl.lisp (receive-if): Bind *break-on-signals* to
+	nil before using with-timeout.
+
+2009-09-22  Helmut Eller  <heller@common-lisp.net>
+
+	* swank-ccl.lisp (find-definitions): For fbound symbols also
+	consider source-notes in the function object.  Useful if
+	the function slot was set with (setf (symbol-function ..))
+	and not by defun.
+
+2009-09-21  Stas Boukarev  <stassats@gmail.com>
+
+	* doc/slime.texi (slime-sprof): document slime-sprof contrib.
+
+2009-09-20  Tobias C. Rittweiler <tcr@freebits.de>
+
+	* swank-abcl.lisp (thread-description): Fix typo.
+	(set-thread-description): Ditto.
+
+2009-09-20  Tobias C. Rittweiler <tcr@freebits.de>
+
+	Generalize M-? (or M-_ respectively.)
+
+	It will now list:
+
+	  - call sites for functions,
+
+	  - macroexpand sites for macros,
+
+	  - binding, setting, referencing sites for variables,
+
+	  - specializing methods for classes.
+
+	* slime.el (slime-xref): Deal with :not-implemented.
+	(slime-xrefs): New. Makes RPC request to XREFS.
+	(slime-edit-callers): Renamed to `slime-edit-uses'.
+	(slime-edit-uses): Use slime-xrefs.
+
+	* swank-backend.lisp (who-*): Add default implementation which
+	returns :not-implemented.
+
+	* swank.lisp (xref-doit): Extracted from XREF.
+	(xref): Pass over :not-implemented to Emacs side.
+	(xrefs): New slime fun. To return results of multiple XREF
+	requests at once.
+
+2009-09-20  Mark Evenson  <evenson@panix.com>
+
+	Use *INVOKE-DEBUGGER-HOOK* introduced in ABCL by analogy to SBCL
+	 (Tobias Rittweiler).
+
+	* swank-abcl.lisp (sys::break): Conditionally redefine SYS::BREAK
+	only if SYS::INVOKE-DEUBBGER-HOOK is not present.
+
+2009-09-18  Tobias C. Rittweiler <tcr@freebits.de>
+
+	* slime.el (slime-parent-bindings): Define M-? as
+	`slime-edit-callers', too. My previous choice of M-_ was warped
+	due to my German layout.
+
+2009-09-18  Tobias C. Rittweiler <tcr@freebits.de>
+
+	New binding: M-_ (`slime-edit-callers').
+
+	Similiar to `slime-who-calls' but only creates an Xref buffer if
+	needed for disambiguation, and also pushes to the definition
+	stack.
+
+	Spiritually like M-. but works "in the other direction".
+
+	* slime.el (sllime-edit-callers): New function. Cross between
+	`slime-who-calls' and `slime-edit-definition'.
+	(slime-parent-bindings): Define M-_ as `slime-edit-callers'.
+	(slime-pop-xref-buffer): New helper. Extracted from
+	`slime-show-xrefs'.
+	(slime-show-xrefs): Use it.
+	(slime-xref): Let callers specify a continuation.
+
+2009-09-17  Tobias C. Rittweiler <tcr@freebits.de>
+
+	* swank-abcl.lisp (sys::break): Fix typo.
+	(slot-definition-documentation, slot-definition-type)
+	(class-prototype, generic-function-declarations)
+	(specializers-direct-methods, slot-boundp-using-class)
+	(slot-value-using-class): Add IGNORE declarations. Compiling
+	swank-abcl.lisp is now free of warnings.
+	(swank-compile-file): Load the compiled file even though warnings
+	were signalled during compilation.
+
+2009-09-17  Mark Evenson  <evenson@panix.com>
+
+	* swank-abcl.lisp (source-location): Emacs buffers start at 1,
+	whereas CL files start at 0 (Tobias Rittweiler).
+
+2009-09-16  Stas Boukarev  <stassats@gmail.com>
+
+	* swank.lisp (documentation-symbol): Return more readable information.
+
+2009-09-14  Mark Evenson  <evenson@panix.com>
+
+	* swank-abcl.lisp (source-location): Fix typo.
+
+2009-09-12  Mark Evenson  <evenson@panix.com>
+
+	Provided by Alan Ruttenberg.
+
+	* swank-abcl.lisp (source-location): Make edit definition work.
+
+	* swank-abcl.lisp (arglist): Now works with generic functions.
+
+
+2009-09-08  Helmut Eller  <heller@common-lisp.net>
+
+	* swank-loader.lisp (lisp-version-string): Include "-ics" for
+	version with extended charsets.  Suggested by Scott L. Burson.
+
 2009-09-03  Helmut Eller  <heller@common-lisp.net>
 
 	* slime.el (slime-net-close): set-process-query-on-exit-flag
