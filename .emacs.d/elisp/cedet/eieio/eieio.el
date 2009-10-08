@@ -5,7 +5,7 @@
 ;; Copyright (C) 95,96,98,99,2000,01,02,03,04,05,06,07,08,09 Eric M. Ludlam
 ;;
 ;; Author: <zappo@gnu.org>
-;; RCS: $Id: eieio.el,v 1.189 2009/09/12 02:34:00 zappo Exp $
+;; RCS: $Id: eieio.el,v 1.191 2009/09/29 02:05:06 zappo Exp $
 ;; Keywords: OO, lisp
 
 (defvar eieio-version "1.2"
@@ -1416,12 +1416,6 @@ Argument FN is the function calling this verifier."
       (slot-unbound instance (object-class instance) slotname fn)
     value))
 
-;;; Missing types that are useful to me.
-;;
-(defun boolean-p (bool)
-  "Return non-nil if BOOL is nil or t."
-  (or (null bool) (eq bool t)))
-
 ;;; Get/Set slots in an object.
 ;;
 (defmacro oref (obj slot)
@@ -2128,7 +2122,7 @@ If CLASS is nil, then an empty list of methods should be returned."
 		    ;; This prevents duplicates coming out of the
 		    ;; class method optimizer.  Perhaps we should
 		    ;; just not optimize before/afters?
-		    (not (eq (car tmpl) (car (car lambdas)))))
+		    (not (member tmpl lambdas)))
 	    (setq lambdas (cons tmpl lambdas))
 	    (if (null (car lambdas))
 		(setq lambdas (cdr lambdas))))))

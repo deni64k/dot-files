@@ -6,7 +6,6 @@
 /sb-arch-bluegate.el/1.6/Wed Jul 22 19:09:22 2009//
 /sb-asahi-html.el/1.22/Wed Jul 22 19:09:22 2009//
 /sb-asahi-mytown.el/1.13/Wed Jul 22 19:09:22 2009//
-/sb-asahi.el/1.169/Wed Jul 22 19:09:22 2009//
 /sb-atmarkit.el/1.18/Wed Jul 22 19:09:22 2009//
 /sb-atom.el/1.6/Wed Jul 22 19:09:22 2009//
 /sb-bbc.el/1.16/Wed Jul 22 19:09:22 2009//
@@ -34,7 +33,6 @@
 /sb-gnome.el/1.14/Wed Jul 22 19:09:22 2009//
 /sb-haiku-os.el/1.5/Wed Jul 22 19:09:22 2009//
 /sb-hash.el/1.3/Wed Jul 22 19:09:22 2009//
-/sb-heise.el/1.23/Wed Jul 22 19:09:22 2009//
 /sb-hns.el/1.21/Wed Jul 22 19:09:22 2009//
 /sb-ibm-dev.el/1.29/Wed Jul 22 19:09:22 2009//
 /sb-infoshop.el/1.5/Wed Jul 22 19:09:22 2009//
@@ -43,7 +41,6 @@
 /sb-javaconf.el/1.10/Wed Jul 22 19:09:22 2009//
 /sb-jpilot.el/1.9/Wed Jul 22 19:09:22 2009//
 /sb-jpo.el/1.16/Wed Jul 22 19:09:22 2009//
-/sb-kantei.el/1.35/Wed Jul 22 19:09:22 2009//
 /sb-kde.el/1.8/Wed Jul 22 19:09:22 2009//
 /sb-laut-de.el/1.6/Wed Jul 22 19:09:22 2009//
 /sb-linuxce-jp.el/1.7/Wed Jul 22 19:09:22 2009//
@@ -72,7 +69,6 @@
 /sb-orca.el/1.6/Wed Jul 22 19:09:22 2009//
 /sb-palmfan.el/1.27/Wed Jul 22 19:09:22 2009//
 /sb-pcweb-column.el/1.15/Wed Jul 22 19:09:22 2009//
-/sb-perlentaucher-de.el/1.3/Wed Jul 22 19:09:22 2009//
 /sb-pilot-link.el/1.8/Wed Jul 22 19:09:22 2009//
 /sb-pilot-mailsync.el/1.9/Wed Jul 22 19:09:22 2009//
 /sb-plucker.el/1.5/Wed Jul 22 19:09:22 2009//
@@ -123,13 +119,17 @@
 /sb-zeit-de.el/1.15/Wed Jul 22 19:09:22 2009//
 /sb-slashdot.el/1.9/Sun Aug  2 20:18:05 2009//
 /sb-atom-hash.el/1.8/Thu Aug 13 20:56:45 2009//
-/nnshimbun.el/1.65/Sun Sep  6 21:44:42 2009//
 /sb-debugmagazin-de.el/1.4/Sun Sep  6 21:44:42 2009//
 /sb-tech-on.el/1.11/Sun Sep  6 21:44:42 2009//
 /shimbun.el/1.200/Sun Sep  6 21:44:42 2009//
-/ChangeLog/1.207/Thu Sep 24 22:11:19 2009//
 /sb-cgi-board.el/1.9/Thu Sep 24 22:11:19 2009//
 /sb-cnet.el/1.27/Thu Sep 24 22:11:19 2009//
 /sb-impress.el/1.40/Thu Sep 24 22:11:19 2009//
 /sb-multi.el/1.7/Thu Sep 24 22:11:19 2009//
+/ChangeLog/1.215/Thu Oct  8 21:57:33 2009//
+/nnshimbun.el/1.66/Thu Oct  8 21:57:34 2009//
+/sb-asahi.el/1.170/Thu Oct  8 21:57:34 2009//
+/sb-heise.el/1.24/Thu Oct  8 21:57:34 2009//
+/sb-kantei.el/1.39/Thu Oct  8 21:57:34 2009//
+/sb-perlentaucher-de.el/1.4/Thu Oct  8 21:57:34 2009//
 D

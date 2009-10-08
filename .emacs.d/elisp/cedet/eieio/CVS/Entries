@@ -13,7 +13,6 @@
 /eieio-opt.el/1.39/Wed Jul 22 19:09:21 2009//
 /eieio-perftest.el/1.4/Wed Jul 22 19:09:21 2009//
 /eieio-speedbar.el/1.20/Wed Jul 22 19:09:21 2009//
-/eieio-test-methodinvoke.el/1.8/Wed Jul 22 19:09:21 2009//
 /eieio-xml.el/1.3/Wed Jul 22 19:09:21 2009//
 /eieio.texi/1.62/Wed Jul 22 19:09:21 2009//
 /eieiocomp.el/1.3/Wed Jul 22 19:09:21 2009//
@@ -24,5 +23,6 @@
 /eieio-tests.el/1.48/Sun Sep  6 21:44:29 2009//
 /eieio-comp.el/1.16/Thu Sep 24 22:01:11 2009//
 /eieio-datadebug.el/1.6/Thu Sep 24 22:01:11 2009//
-/eieio.el/1.189/Thu Sep 24 22:01:11 2009//
+/eieio-test-methodinvoke.el/1.9/Thu Oct  8 21:57:23 2009//
+/eieio.el/1.191/Thu Oct  8 21:57:23 2009//
 D
