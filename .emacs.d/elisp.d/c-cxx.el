@@ -243,8 +243,8 @@
   (font-lock-add-keywords 'c++-mode
                           '(("^[^\n]\\{100\\}\\(.*\\)$"
                              1 font-lock-warning-face prepend)))
-  (setq
-   c-macro-preprocessor "cpp -x c++ `__dir=/usr/local/include; if [ -d $__dir ]; then echo -n -I$__dir; fi` -C")
+  (setq c-macro-cppflags
+        "-DDEBUG -I ./include -x c++ `__dir=/usr/local/include; if [ -d $__dir ]; then echo -n -I$__dir; fi` -C")
   )
 
 ;; run befor all c-mode flavours
