@@ -1,5 +1,5 @@
 ;;; -*- mode: emacs-lisp; -*-
-;;; Time-stamp: "2009-08-16 22:57:20 (dennis)"
+;;; Time-stamp: "2009-10-18 03:09:08 (dennis)"
 ;;;
 ;;; TODO: сделать некую систему режимов, аля (i-am-at 'home) или (i-am-at 'mfi)
 ;;;       если работа происходит с файлами в ~/work/mfi/projects, то грузить
@@ -353,7 +353,7 @@ Require `font-lock'."
 ;; make s-<f10> switch to *scratch*
 (global-set-key (kbd "s-<f10>") (lambda nil (interactive) (switch-to-buffer "*scratch*")))
 (global-set-key (kbd "s-<f11>") (lambda nil (interactive) (find-file "~/.emacs")))
-(global-set-key (kbd "s-<f12>") (lambda nil (interactive) (find-file "~/.emacs.d/elisp/")))
+(global-set-key (kbd "s-<f12>") (lambda nil (interactive) (find-file "~/.emacs.d/elisp.d/")))
 
 (global-set-key (kbd "<f5>") 'revert-buffer)
 
@@ -630,64 +630,7 @@ Require `font-lock'."
     (ansi-term prg prg)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; if we try to save a file owned by someone else, use sudo
-;; http://www.emacswiki.org/cgi-bin/wiki/SudoSave
-(when (require-maybe 'sudo)
-  (defun sudo-before-save-hook ()
-    (set (make-local-variable 'sudo:file) (buffer-file-name))
-    (when sudo:file
-      (unless (file-writable-p sudo:file)
-        (set (make-local-variable 'sudo:old-owner-uid)
-          (nth 2 (file-attributes sudo:file)))
-        (when (numberp sudo:old-owner-uid)
-          (unless (= (user-uid) sudo:old-owner-uid)
-            (when (y-or-n-p
-                    (format "File %s is owned by %s, save it with sudo? "
-                      (file-name-nondirectory sudo:file)
-                      (user-login-name sudo:old-owner-uid)))
-              (sudo-chown-file (int-to-string (user-uid))
-                (sudo-quoting sudo:file))
-              (add-hook 'after-save-hook
-                (lambda ()
-                  (sudo-chown-file (int-to-string sudo:old-owner-uid)
-                    (sudo-quoting sudo:file))
-                  (if sudo-clear-password-always
-                    (sudo-kill-password-timeout)))
-                nil   ;; not append
-                t           ;; buffer local hook
-                )))))))
-  (add-hook 'before-save-hook 'sudo-before-save-hook))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; "I always compile my .emacs, saves me about two seconds
-;; startuptime. But that only helps if the .emacs.elc is newer
-;; than the .emacs. So compile .emacs if it's not."
-(defun negval/auto-recompile-file-always ()
-  (when (equal mode-name "Emacs-Lisp")
-    (let ((maximum-compile-log-height 8)
-          (old-window-start (window-start))
-          (old-window-point (window-point)))
-      ;; pre-split for compile log buffer so that it does not modify the layout
-      (set-window-buffer (split-window-vertically (- (window-height) maximum-compile-log-height)) (get-buffer-create "*Compile-Log*"))
-      ;; byte compile the buffer
-      (byte-compile-file buffer-file-name)
-      (let ((buf (get-buffer "*Compile-Log*")))
-        ;; scroll to the end to see if there's an error
-        (set-window-point (get-buffer-window buf) (buffer-size buf))
-        ;; auto close the compile log window and restore original display position
-        (run-at-time 1.0 nil (lambda (buf)
-                               (delete-windows-on buf)
-                               (set-window-point (selected-window) old-window-point)
-                               (set-window-start (selected-window) old-window-start))
-                     buf)))))
-
-(defun add-after-save-hook ()
-  (make-local-hook 'after-save-hook)
-  (add-hook 'after-save-hook 'negval/auto-recompile-file-always))
-
-(add-hook 'emacs-lisp-mode-hook 'add-after-save-hook)
+(load-file "~/.emacs.d/elisp.d/sudosave.el")
 
 (custom-set-variables
  '(mouse-yank-at-point t))
