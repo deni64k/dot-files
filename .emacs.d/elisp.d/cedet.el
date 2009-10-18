@@ -5,7 +5,7 @@
 ;;
 ;; Enabling Semantic (code-parsing, smart completion) features.
 (load-file "~/.emacs.d/elisp/cedet/common/cedet.el")
-(setq semantic-load-turn-useful-things-on t)
+
 (semantic-load-enable-excessive-code-helpers)
 ;;(semantic-load-enable-semantic-debugging-helpers)
 
@@ -21,27 +21,26 @@
 (require 'semantic-ia)
 (require 'semantic-tag)
 
+;; Enable SemanticDB.
+(require 'semanticdb)
 (setq-mode-local c-mode semanticdb-find-default-throttle
-                 '(project unloaded system recursive))
+                 '(local project unloaded system recursive))
 (setq-mode-local c++-mode semanticdb-find-default-throttle
-                 '(project unloaded system recursive))
+                 '(local project unloaded system recursive omniscience))
 (setq-mode-local erlang-mode semanticdb-find-default-throttle
-                 '(project unloaded system recursive))
+                 '(local project unloaded system recursive))
 ;;(setq-mode-local c++-mode semanticdb-implied-include-tags
 ;;                 (semantic-find-tags-included "/home/dsuhonin/projects/idfs/include/pch.hxx"))
 
-;; Enable SemanticDB.
-(require 'semanticdb)
-;; TODO: parse `gcc -print-prog-name=cc1plus` -v < /dev/null
 (require 'semantic-gcc)
 (semantic-gcc-setup)
 (global-semanticdb-minor-mode 1)
 (setq semanticdb-default-save-directory "~/.tmp/semanticdb")
 (when (not (file-exists-p semanticdb-default-save-directory))
   (make-directory semanticdb-default-save-directory))
-(dolist (dir '("/usr/include" "/usr/local/include" "/usr/include/postgresql"
-               "/usr/include/c++/4.2" "/usr/include/c++/4.2/backwards"
-               "/usr/include/c++/4.3" "/usr/include/c++/4.3/backwards"))
+(dolist (dir '("/usr/local/include"       ; for *BSD systems
+               "/usr/include/postgresql"  ; for Debian's pgsql
+               ))
   (when (file-exists-p dir)
     (semantic-add-system-include dir 'c-mode)
     (semantic-add-system-include dir 'c++-mode)))
@@ -49,7 +48,7 @@
                                            "/usr/local/include/boost")))
 (when boost-dir
   (add-to-list 'semantic-lex-c-preprocessor-symbol-file
-               (concat boost-dir "/boost/config.hpp")))
+               (concat boost-dir "/config.hpp")))
 
 ;; EAssist.
 (when (require-maybe 'eassist)
@@ -87,16 +86,19 @@
 (add-hook 'erlang-mode-hook 'negval/cedet-hook)
 
 ;; gnu global support
-;; (require 'semanticdb-global)
-;; (semanticdb-enable-gnu-global-databases 'c-mode)
-;; (semanticdb-enable-gnu-global-databases 'c++-mode)
+(require 'semanticdb-global)
+(semanticdb-enable-gnu-global-databases 'c-mode)
+(semanticdb-enable-gnu-global-databases 'c++-mode)
 
 ;; ctags
-;; (require 'semanticdb-ectag)
-;; (semantic-load-enable-primary-exuberent-ctags-support)
+(require 'semanticdb-ectag)
+(add-to-list 'semantic-ectag-program-list "exctags") ; for *BSD
+(semantic-load-enable-primary-exuberent-ctags-support)
 
 (custom-set-variables
- '(semantic-idle-scheduler-work-idle-time 10)
+ '(semantic-idle-scheduler-mode t)
+ '(semantic-idle-scheduler-idle-time 20)
+ '(semantic-idle-scheduler-work-idle-time 30)
  '(semantic-self-insert-show-completion-function
    (lambda nil (semantic-ia-complete-symbol-menu (point))))
  '(global-semantic-tag-folding-mode
