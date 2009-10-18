@@ -847,14 +847,15 @@ earlier in the buffer."
                             (p (and (not (equal p (slime-lisp-package))) p)))
                        (slime-read-package-name "Package: " p))))
   (with-current-buffer (slime-output-buffer)
-    (let ((unfinished-input (slime-repl-current-input)))
+    (let ((previouse-point (- (point) slime-repl-input-start-mark)))
       (destructuring-bind (name prompt-string)
           (slime-repl-shortcut-eval `(swank:set-package ,package))
         (setf (slime-lisp-package) name)
         (setf (slime-lisp-package-prompt-string) prompt-string)
         (setf slime-buffer-package name)
         (slime-repl-insert-prompt)
-        (insert unfinished-input)))))
+        (when (plusp previouse-point)
+          (goto-char (+ previouse-point slime-repl-input-start-mark)))))))
 
 
 ;;;;; History
@@ -1550,9 +1551,14 @@ expansion will be added to the REPL's history.)"
      t)
     (t nil)))
 
+(defun slime-repl-find-buffer-package ()
+  (or (slime-search-buffer-package)
+      (slime-lisp-package)))
+
 (defun slime-repl-init ()
   (add-hook 'slime-event-hooks 'slime-repl-event-hook-function)
-  (add-hook 'slime-connected-hook 'slime-repl-connected-hook-function))
+  (add-hook 'slime-connected-hook 'slime-repl-connected-hook-function)
+  (setq slime-find-buffer-package-function 'slime-repl-find-buffer-package))
 
 (defun slime-repl-remove-hooks ()
   (remove-hook 'slime-event-hooks 'slime-repl-event-hook-function)

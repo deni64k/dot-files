@@ -1,3 +1,35 @@
+2009-10-15  Helmut Eller  <heller@common-lisp.net>
+
+	* slime-repl.el (slime-repl-find-buffer-package): New function.
+	(slime-repl-init): Initialize slime-find-buffer-package-function.
+
+2009-10-14  Tobias C. Rittweiler  <tcr@freebits.de>
+
+	* slime-sprof.el (slime-sprof-browser-mode-map): Make
+	`slime-parent-map' its parent.
+
+2009-10-12  Stas Boukarev  <stassats@gmail.com>
+
+	* slime-repl.el (slime-repl-set-package): Don't double unfinished input
+	and don't move point if it's inside the input area.
+
+2009-10-10  Tobias C. Rittweiler  <tcr@freebits.de>
+
+	* slime-fontifying-fu.el (slime-search-suppressed-forms): Add
+	clause for new condition `slime-incorrect-feature-expression'.
+	([test] font-lock-magic): Add new test case.
+
+2009-10-09  Stas Boukarev  <stassats@gmail.com>
+
+	* swank-sprof.lisp: Add ability to exclude functions which symbols
+	are from swank package.
+	* slime-sprof.el (slime-sprof-toggle-swank-exclusion): New function.
+	Bound to s in the slime-sprof buffer.
+	* slime-sprof.el (slime-sprof-exclude-swank): New variable for
+	controlling exclusion of swank functions.
+
+	* slime-sprof.el: Slightly factor code, add menu entries.
+
 2009-09-29  Stas Boukarev  <stassats@gmail.com>
 
 	* slime-repl.el (slime-sync-package-and-default-directory):

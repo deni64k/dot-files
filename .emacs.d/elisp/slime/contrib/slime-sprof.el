@@ -12,23 +12,18 @@
 
 (slime-require :swank-sprof)
 
+(defvar slime-sprof-exclude-swank nil
+  "*Display swank functions in the report.")
+
 (define-derived-mode slime-sprof-browser-mode fundamental-mode
   "slprof"
   "Mode for browsing profiler data\
 \\<slime-sprof-browser-mode-map>\
 \\{slime-sprof-browser-mode-map}"
-  (setq buffer-read-only t)
-  (let ((inhibit-read-only t))
-    (erase-buffer)
-    (insert (format "%4s %-54s %6s %6s %6s\n"
-                    "Rank"
-                    "Name"
-                    "Self%"
-                    "Cumul%"
-                    "Total%"))
-    (dolist (data graph)
-      (slime-sprof-browser-insert-line data 54)))
-  (goto-line 2))
+  :syntax-table lisp-mode-syntax-table
+  (setq buffer-read-only t))
+
+(set-keymap-parent slime-sprof-browser-mode-map slime-parent-map)
 
 (slime-define-keys slime-sprof-browser-mode-map
   ("h" 'describe-mode)
@@ -36,6 +31,7 @@
   ("d" 'slime-sprof-browser-disassemble-function)
   ("g" 'slime-sprof-browser-go-to)
   ("v" 'slime-sprof-browser-view-source)
+  ("s" 'slime-sprof-toggle-swank-exclusion)
   ((kbd "RET") 'slime-sprof-browser-toggle))
 
 ;; Start / stop profiling
@@ -50,17 +46,44 @@
 
 ;; Reporting
 
+(defun slime-sprof-format (graph)
+  (with-current-buffer (slime-sprof-browser-buffer)
+    (let ((inhibit-read-only t))
+      (erase-buffer)
+      (insert (format "%4s %-54s %6s %6s %6s\n"
+                      "Rank"
+                      "Name"
+                      "Self%"
+                      "Cumul%"
+                      "Total%"))
+      (dolist (data graph)
+        (slime-sprof-browser-insert-line data 54))))
+  (goto-line 2))
+
+(defun* slime-sprof-update (&optional (exclude-swank slime-sprof-exclude-swank))
+  (slime-eval-async `(swank:swank-sprof-get-call-graph
+                      :exclude-swank ,exclude-swank)
+                    'slime-sprof-format))
+
 (defun slime-sprof-browser ()
   (interactive)
-  (lexical-let ((buffer (slime-sprof-browser-get-buffer)))
-    (slime-eval-async `(swank:swank-sprof-get-call-graph)
-                      (lambda (graph)
-                        (with-current-buffer buffer
-                          (switch-to-buffer buffer)
-                          (slime-sprof-browser-mode))))))
+  (switch-to-buffer (slime-sprof-browser-buffer))
+  (slime-sprof-update))
 
-(defun slime-sprof-browser-get-buffer ()
-  (get-buffer-create "*slime-sprof-browser*"))
+(defun slime-sprof-browser-buffer ()
+  (if (get-buffer "*slime-sprof-browser*")
+      (get-buffer "*slime-sprof-browser*")
+      (let ((connection (slime-connection)))
+        (with-current-buffer (get-buffer-create "*slime-sprof-browser*")
+          (slime-sprof-browser-mode)
+          (setq slime-buffer-connection connection)
+          (current-buffer)))))
+
+(defun slime-sprof-toggle-swank-exclusion ()
+  (interactive)
+  (setq slime-sprof-exclude-swank
+        (not slime-sprof-exclude-swank))
+  (slime-sprof-update))
 
 (defun slime-sprof-browser-insert-line (data name-length)
   (destructuring-bind (index name self cumul total)
@@ -190,5 +213,16 @@
             (ding))
            (t
             (slime-show-source-location source-location))))))))
+
+;;; Menu
+
+(defun slime-sprof-init ()
+  (let ((C '(and (slime-connected-p)
+             (equal (slime-lisp-implementation-type) "SBCL"))))
+    (setf (cdr (last (assoc "Profiling" slime-easy-menu)))
+          `("--"
+            [ "Start sb-sprof"  slime-sprof-start ,C ]
+            [ "Stop sb-sprof"   slime-sprof-stop ,C ]
+            [ "Report sb-sprof" slime-sprof-browser ,C ]))))
 
 (provide 'slime-sprof)

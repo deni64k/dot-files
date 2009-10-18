@@ -116,7 +116,6 @@
 /sb-yomiuri-html.el/1.15/Wed Jul 22 19:09:22 2009//
 /sb-yomiuri.el/1.60/Wed Jul 22 19:09:22 2009//
 /sb-zdnet-jp.el/1.9/Wed Jul 22 19:09:22 2009//
-/sb-zeit-de.el/1.15/Wed Jul 22 19:09:22 2009//
 /sb-slashdot.el/1.9/Sun Aug  2 20:18:05 2009//
 /sb-atom-hash.el/1.8/Thu Aug 13 20:56:45 2009//
 /sb-debugmagazin-de.el/1.4/Sun Sep  6 21:44:42 2009//
@@ -126,10 +125,11 @@
 /sb-cnet.el/1.27/Thu Sep 24 22:11:19 2009//
 /sb-impress.el/1.40/Thu Sep 24 22:11:19 2009//
 /sb-multi.el/1.7/Thu Sep 24 22:11:19 2009//
-/ChangeLog/1.215/Thu Oct  8 21:57:33 2009//
 /nnshimbun.el/1.66/Thu Oct  8 21:57:34 2009//
 /sb-asahi.el/1.170/Thu Oct  8 21:57:34 2009//
 /sb-heise.el/1.24/Thu Oct  8 21:57:34 2009//
-/sb-kantei.el/1.39/Thu Oct  8 21:57:34 2009//
 /sb-perlentaucher-de.el/1.4/Thu Oct  8 21:57:34 2009//
+/ChangeLog/1.217/Sun Oct 18 20:29:14 2009//
+/sb-kantei.el/1.40/Sun Oct 18 20:29:14 2009//
+/sb-zeit-de.el/1.16/Sun Oct 18 20:29:14 2009//
 D

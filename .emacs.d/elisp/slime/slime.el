@@ -3,6 +3,9 @@
 ;;;; License
 ;;     Copyright (C) 2003  Eric Marsden, Luke Gorrie, Helmut Eller
 ;;     Copyright (C) 2004,2005,2006  Luke Gorrie, Helmut Eller
+;;     Copyright (C) 2007,2008,2009  Helmut Eller, Tobias C. Rittweiler
+;;
+;;     For a detailed list of contributors, see the manual.
 ;;
 ;;     This program is free software; you can redistribute it and/or
 ;;     modify it under the terms of the GNU General Public License as
@@ -26,22 +29,26 @@
 ;; main features are:
 ;;
 ;;   A socket-based communication/RPC interface between Emacs and
-;;   Lisp.
+;;   Lisp, enabling introspection and remote development.
 ;;
 ;;   The `slime-mode' minor-mode complementing `lisp-mode'. This new
 ;;   mode includes many commands for interacting with the Common Lisp
 ;;   process.
 ;;
-;;   Common Lisp debugger written in Emacs Lisp. The debugger pops up
+;;   A Common Lisp debugger written in Emacs Lisp. The debugger pops up
 ;;   an Emacs buffer similar to the Emacs/Elisp debugger.
+;;
+;;   A Common Lisp inspector to interactively look at run-time data.
 ;;
 ;;   Trapping compiler messages and creating annotations in the source
 ;;   file on the appropriate forms.
 ;;
-;; SLIME is compatible with GNU Emacs 21, 22, 23 and XEmacs 21. In
-;; order to run SLIME requires a supporting Lisp server called
-;; Swank. Swank is distributed with slime.el and will automatically be
-;; started in a normal installation.
+;; SLIME should work with Emacs 22 and 23.  If it works on XEmacs,
+;; consider yourself lucky.
+;;
+;; In order to run SLIME, a supporting Lisp server called Swank is
+;; required. Swank is distributed with slime.el and will automatically
+;; be started in a normal installation.
 
 
 ;;;; Dependencies and setup
@@ -8321,8 +8328,10 @@ keys."
   (etypecase seq
     (list
      (let ((list seq))
-       (setq list (nthcdr (1- n) list))
-       (and list (null (cdr list)))))
+       (if (and (null list) (zerop n))
+           t
+           (let ((tail (nthcdr (1- n) list)))
+             (and tail (null (cdr tail)))))))
     (sequence
      (= (length seq) n))))
 
@@ -8450,8 +8459,12 @@ within. This includes nested comments (#| ... |#)."
                 name 
               (concat ":" name)))))
 
+(put 'slime-incorrect-feature-expression
+     'error-conditions '(slime-incorrect-feature-expression error))
+
 (put 'slime-unknown-feature-expression
-     'error-conditions '(slime-unknown-feature-expression error))
+     'error-conditions '(slime-unknown-feature-expression 
+                         slime-incorrect-feature-expression))
 
 (defun slime-eval-feature-expression (e)
   "Interpret a reader conditional expression."
@@ -8462,11 +8475,18 @@ within. This includes nested comments (#| ... |#)."
                     (case head
                       (:and #'every)
                       (:or #'some)
-                      (:not (lambda (f l) (not (apply f l))))
+                      (:not 
+                         (lexical-let ((feature-expression e))
+                           (lambda (f l) 
+                             (cond 
+                               ((slime-length= l 0) t)
+                               ((slime-length= l 1) (not (apply f l)))
+                               (t (signal 'slime-incorrect-feature-expression 
+                                          feature-expression))))))
                       (t (signal 'slime-unknown-feature-expression head))))
                   #'slime-eval-feature-expression
                   (cdr e)))
-        (t (signal 'slime-unknown-feature-expression e))))
+        (t (signal 'slime-incorrect-feature-expression e))))
 
 ;;;;; Extracting Lisp forms from the buffer or user
 

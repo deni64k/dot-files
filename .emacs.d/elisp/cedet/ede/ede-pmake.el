@@ -4,7 +4,7 @@
 
 ;; Author: Eric M. Ludlam <zappo@gnu.org>
 ;; Keywords: project, make
-;; RCS: $Id: ede-pmake.el,v 1.60 2009/10/01 02:23:25 zappo Exp $
+;; RCS: $Id: ede-pmake.el,v 1.62 2009/10/17 02:04:10 zappo Exp $
 
 ;; This software is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -201,6 +201,9 @@ MFILENAME is the makefile to generate."
 	(error "Makefile.in is not supported"))
        ((eq (oref this makefile-type) 'Makefile.am)
 	(require 'ede-pconf)
+	;; Basic vars needed:
+	(ede-proj-makefile-automake-insert-subdirs this)
+	(ede-proj-makefile-automake-insert-extradist this)
 	;; Distribution variables
 	(let ((targ (if isdist (oref this targets) mt)))
 	  (ede-compiler-begin-unique
@@ -236,8 +239,11 @@ MFILENAME is the makefile to generate."
   "Add VARNAME into the current Makefile.
 Execute BODY in a location where a value can be placed."
   `(let ((addcr t) (v ,varname))
-     (if (re-search-backward (concat "^" v "\\s-*=") nil t)
+     (if (save-excursion
+	   (goto-char (point-max))
+	   (re-search-backward (concat "^" v "\\s-*=") nil t))
 	 (progn
+	   (goto-char (match-end 0))
 	   (ede-pmake-end-of-variable)
 	   (if (< (current-column) 40)
 	       (if (and (/= (preceding-char) ?=)
@@ -510,6 +516,19 @@ Argument THIS is the target that should insert stuff."
 Argument THIS is the target that should insert stuff."
   (ede-proj-makefile-insert-dist-dependencies this)
   )
+
+(defmethod ede-proj-makefile-automake-insert-subdirs ((this ede-proj-project))
+  "Insert a SUBDIRS variable for Automake."
+  (ede-pmake-insert-variable-once "SUBDIRS"
+    (ede-map-subprojects
+     this (lambda (sproj)
+	    (insert " " (ede-subproject-relative-path sproj))
+	    ))))
+
+(defmethod ede-proj-makefile-automake-insert-extradist ((this ede-proj-project))
+  "Insert the EXTRADIST variable entries needed for Automake and EDE."
+  (ede-pmake-insert-variable-once "EXTRA_DIST"
+    (insert "Project.ede")))
 
 (defmethod ede-proj-makefile-insert-dist-rules ((this ede-proj-project))
   "Insert distribution rules for THIS in a Makefile, such as CLEAN and DIST."

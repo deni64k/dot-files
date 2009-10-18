@@ -1,6 +1,4 @@
 /.cvsignore/1.2/Wed Jul 22 19:09:21 2009//
-/Makefile/1.34/Wed Jul 22 19:09:21 2009//
-/Project.ede/1.14/Wed Jul 22 19:09:21 2009//
 /bovine-grammar-macros.el/1.4/Wed Jul 22 19:09:21 2009//
 /bovine-grammar.el/1.21/Wed Jul 22 19:09:21 2009//
 /erlang-edoc.el/1.5/Wed Jul 22 19:09:21 2009//
@@ -16,8 +14,10 @@
 /semantic-gcc.el/1.18/Sun Sep  6 21:44:30 2009//
 /bovine-debug.el/1.5/Thu Sep 24 22:01:12 2009//
 /semantic-bovine.el/1.15/Thu Sep 24 22:01:12 2009//
-/semantic-c.el/1.129/Thu Sep 24 22:01:12 2009//
 /semantic-el.el/1.53/Thu Sep 24 22:01:12 2009//
 /semantic-java.el/1.19/Thu Sep 24 22:01:12 2009//
 /semantic-make.el/1.22/Thu Sep 24 22:01:12 2009//
+/Makefile/1.35/Sun Oct 18 20:28:55 2009//
+/Project.ede/1.15/Sun Oct 18 20:28:55 2009//
+/semantic-c.el/1.131/Sun Oct 18 20:28:55 2009//
 D

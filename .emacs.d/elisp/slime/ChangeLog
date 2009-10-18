@@ -1,3 +1,27 @@
+2009-10-15  Helmut Eller  <heller@common-lisp.net>
+
+	* slime.el (slime-current-package): Move REPL stuff to contrib.
+
+2009-10-15  Stas Boukarev  <stassats@gmail.com>
+
+	* slime.el (slime-current-package): Return REPL's package,
+	if other are unavailable and if slime-repl is loaded.
+
+2009-10-12  Tobias C. Rittweiler <tcr@freebits.de>
+
+	* slime.el: Update copyright.
+
+2009-10-10  Tobias C. Rittweiler <tcr@freebits.de>
+
+	* slime.el (slime-length=): Fix (slime-length= '() 0).
+	(slime-eval-feature-expression): Fix. Couldn't handle (NOT)
+	and (NOT FOO BAR).
+
+2009-10-09  Stas Boukarev  <stassats@gmail.com>
+
+	* swank.lisp (stop-server): (list-threads) returns threads offset by 1,
+	don't kill the wrong thread.
+
 2009-10-06  Stas Boukarev  <stassats@gmail.com>
 
 	* swank-ccl.lisp (map-backtrace): Handle null end-frame-number argument.
