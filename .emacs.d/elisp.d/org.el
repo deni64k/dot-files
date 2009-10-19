@@ -6,7 +6,8 @@
  '(org-special-ctrl-a/e t)
  '(mark-diary-entries-in-calendar t)
  '(diary-file "~/documents/org/diary")
- '(org-agenda-files (quote ("~/documents/org/programming.org")))
+ '(org-agenda-files (list "~/documents/org/TODO.org"
+                          "~/documents/org/programming.org"))
  '(org-default-notes-file "~/documents/org/notes.org")
  '(org-directory "~/documents/org")
  '(org-insert-mode-line-in-empty-file t))
@@ -35,5 +36,10 @@
       '(
         ("Todo" ?t "* TODO %?\n %i\n %a" (concat org-directory "/TODO.org") "Tasks")
         ))
+
+(define-key global-map "\C-cl" 'org-store-link)
+(define-key global-map "\C-ca" 'org-agenda)
+
+(setq org-log-done t)
 
 ;;; org.el ends here
