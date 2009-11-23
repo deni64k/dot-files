@@ -37,7 +37,7 @@
     '(progn
        (slime-setup '(slime-fancy slime-asdf slime-banner slime-fuzzy
                                   slime-autodoc slime-repl slime-tramp))
-       (setq inferior-lisp-program "sbcl"
+       (setq inferior-lisp-program "sbcl --noinform --no-linedit"
              slime-complete-symbol*-fancy t
              slime-complete-symbol-function 'slime-fuzzy-complete-symbol
              slime-net-coding-system 'utf-8-unix)

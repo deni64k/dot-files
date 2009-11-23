@@ -1,5 +1,5 @@
 ;;; -*- mode: emacs-lisp; -*-
-;;; Time-stamp: "2009-10-18 03:09:08 (dennis)"
+;;; Time-stamp: "2009-11-20 07:07:08 (dennis)"
 ;;;
 ;;; TODO: сделать некую систему режимов, аля (i-am-at 'home) или (i-am-at 'mfi)
 ;;;       если работа происходит с файлами в ~/work/mfi/projects, то грузить
@@ -13,16 +13,18 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; where I store my elisp stuff
 (setq load-path
-      (nconc load-path
-             '("~/.emacs.d/elisp"
+      (nconc '("~/.emacs.d/elisp"
                "~/.emacs.d/elisp/color-theme"
+               "~/.emacs.d/elisp/doxymacs/lisp"
                "~/.emacs.d/elisp/dtrt-indent"
                "~/.emacs.d/elisp/jabber"
                "~/.emacs.d/elisp/magit"
                "~/.emacs.d/elisp/nav"
                "~/.emacs.d/elisp/rails"
                "~/.emacs.d/elisp/ruby"
-               )))
+               )
+	     load-path
+	     ))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -90,10 +92,6 @@
   (progn
     (set-fringe-mode '(nil . 0))
     (setq indicate-buffer-boundaries 'left)
-    (custom-set-faces
-     '(fringe
-       ((((class color) (background dark)) (:background "grey10"))
-        (((class color) (background light)) (:background "snow")))))
     ))
 
 (require-maybe 'generic-x)         ; nice mode for config-files
@@ -290,26 +288,6 @@ Require `font-lock'."
    ((looking-at "[]})]")   (forward-char) (backward-sexp 1))
    (t (insert "%"))))
 (global-set-key (kbd "%") 'paren-match)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; change cursor color based on mode
-;; http://www.emacswiki.org/cgi-bin/wiki/download/cursor-chg.el
-(setq hcz-set-cursor-color-color "")
-(setq hcz-set-cursor-color-buffer "")
-(defun hcz-set-cursor-color-according-to-mode ()
-  "change cursor color according to some minor modes."
-  ;; set-cursor-color is somewhat costly, so we only call it when
-  ;; needed:
-  (let ((color
-         (if buffer-read-only "white"
-           (if overwrite-mode "red" "SteelBlue"))))
-    (unless (and
-             (string= color hcz-set-cursor-color-color)
-             (string= (buffer-name) hcz-set-cursor-color-buffer))
-      (set-cursor-color (setq hcz-set-cursor-color-color color))
-      (setq hcz-set-cursor-color-buffer (buffer-name)))))
-(add-hook 'post-command-hook 'hcz-set-cursor-color-according-to-mode)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -544,6 +522,7 @@ Require `font-lock'."
 (load-file "~/.emacs.d/elisp.d/cmake.el")
 (load-file "~/.emacs.d/elisp.d/emacs-lisp.el")
 (load-file "~/.emacs.d/elisp.d/erlang.el")
+(load-file "~/.emacs.d/elisp.d/forth.el")
 (load-file "~/.emacs.d/elisp.d/haskell.el")
 (load-file "~/.emacs.d/elisp.d/lisp.el")
 (load-file "~/.emacs.d/elisp.d/makefile.el")

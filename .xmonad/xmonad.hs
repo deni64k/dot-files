@@ -1,8 +1,11 @@
 -- Haskell common
 import qualified Data.Map as M
 import System.IO(hPutStrLn)
+import System.IO.Unsafe
 
 import System.Exit
+
+import System.Directory
 
 -- XMonad common
 import XMonad
@@ -13,6 +16,7 @@ import qualified XMonad.Actions.FlexibleResize as Flex
 import XMonad.Actions.UpdatePointer
 import XMonad.Actions.Submap -- not used currently
 import XMonad.Actions.CycleWS
+import qualified XMonad.Actions.Search as Search
 
 -- XMonad hooks
 import XMonad.Hooks.DynamicLog
@@ -51,9 +55,12 @@ colorGray95          = "#f2f2f2"
 
 backgroundColor = colorGray5
 foregroundColor = colorGray95
+-- backgroundColor = "#2c2c32"
+-- foregroundColor = "grey70"
 
 regularFont = "-*-terminus-medium-r-normal-*-12-*-*-*-*-*-*-r"
 xftFont = "terminus:size=8"
+
 
 statusBarCmd = "~/src/dzen/dzen2"
                ++ " -bg '" ++ backgroundColor ++ "'"
@@ -61,8 +68,12 @@ statusBarCmd = "~/src/dzen/dzen2"
                ++ " -fn '" ++ xftFont ++ "'"
                ++ " -sa c -ta l -w 1600 -h 16"
 
+homeDirectory = unsafePerformIO System.Directory.getHomeDirectory
+
+-- statusBarCmd= "~/src/dzen/dzen2 -bg '#2c2c32' -fg 'grey70' -w 1600 -h 16 -sa c -fn '-*-terminus-medium-r-normal-*-12-*-*-*-*-*-*-r' -e '' -ta l"
+
 -- XPConfig options:
-myXPConfig = defaultXPConfig
+ownXPConfig = defaultXPConfig
     { font              = regularFont
     , bgColor           = backgroundColor
     , fgColor           = foregroundColor
@@ -143,8 +154,8 @@ xK_XF86AudioMedia       = 0x1008ff32
 -- keys -----------------------------------------------------------------------
 keys' c = [ ("M-S-<Return>", spawn $ XMonad.terminal c)
           -- run programs
-          , ("M-p"         , shellPrompt myXPConfig)
-          , ("M-S-p"       , prompt (terminal' ++ " -e") myXPConfig)
+          , ("M-p"         , shellPrompt ownXPConfig)
+          , ("M-S-p"       , prompt (terminal' ++ " -e") ownXPConfig)
           -- adjust current window
           , ("M-f"         , withFocused $ windows . W.sink)
           , ("M-c"         , kill)
@@ -169,12 +180,27 @@ keys' c = [ ("M-S-<Return>", spawn $ XMonad.terminal c)
           -- switch workspace
           , ("M-M1-z"      , prevWS)
           , ("M-M1-x"      , nextWS)
+          , ("M-t e"       , Search.promptSearch ownXPConfig lingvoEnRu)
+          , ("M-t r"       , Search.promptSearch ownXPConfig lingvoRuEn)
           ] ++
           -- mod-[1..9], Switch to workspace N
           -- mod-shift-[1..9], Move client to workspace N
           [ (m ++ k, windows $ f w)
                 | (w, k) <- zip (XMonad.workspaces c) (map show [1..9])
                 , (m, f) <- [("M-",W.greedyView), ("M-S-",W.shift)] ]
+          -- ++
+          -- -- Search methods
+          -- -- mapped to mod-c for 'a căuta'
+          -- -- FIXME: broken after recent 'safeSpawn' String -> [String] changes
+          -- [("M-c " ++ k, Search.promptSearch largeXPConfig f) | (k,f) <- searchList ]
+          -- ++
+          -- [("M-C-c " ++ k, Search.selectSearch f) | (k,f) <- searchList ]
+          --     where -- | non-empty workspaces less scratchpad
+          --       shiftAndView dir = findWorkspace getSortByIndexNoSP dir NonEmptyWS 1
+          --                          >>= \t -> (windows . W.shift $ t) >> (windows . W.greedyView $ t)
+          --       getSortByIndexNoSP =
+          --           fmap (.scratchpadFilterOutWorkspace) getSortByIndex
+
 {-
   , ((modMask,               xK_Right       ), sendMessage $ Go R)
   , ((modMask,               xK_Left        ), sendMessage $ Go L)
@@ -189,25 +215,29 @@ keys' c = [ ("M-S-<Return>", spawn $ XMonad.terminal c)
 
 -- dynamicLog pretty printer for dzen
 pp' din = defaultPP
-            { ppCurrent         = wrap "^bg(#262626)^fg(#1e90ff)[^fg(#ffa500)" "^fg(#1e90ff)]^fg()^bg()"
-            , ppVisible         = wrap "" ""
-            , ppHidden          = wrap "" ""
-            , ppHiddenNoWindows = wrap "" ""
-            , ppSep             = " ^fg(grey60)^r(1x8)^fg() "
-            , ppWsSep           = " "
-            , ppLayout          = dzenColor colorDodgerBlue ""
-                                  . (\x -> case x of
-                                            "Mirror ResizableTall"                      -> pad "^i(/home/dennis/.xmonad/dzen/mtall.xbm)"
-                                            "ResizableTall"                             -> pad "^i(/home/dennis/.xmonad/dzen/tall.xbm)"
-                                            "Full"                                      -> pad "^i(/home/dennis/.xmonad/dzen/full.xbm)"
-                                            "Magnifier GridRatio 1.3333333333333333"    -> pad "^i(/home/dennis/.xmonad/dzen/mgrid.xbm)"
-                                            "GridRatio 1.3333333333333333"              -> pad "^i(/home/dennis/.xmonad/dzen/grid.xbm)"
-                                            "ReflectX Gimp"                             -> pad "^i(/home/dennis/.xmonad/dzen/reflectx.xbm)"
-                                            _                                           -> pad x
-                                    )
-            , ppTitle           = dzenColor foregroundColor ""
-            , ppOutput          = hPutStrLn din
+            { ppCurrent = wrap "^bg(#262626)" "^bg()"
+                          . wrap leftBracket rightBracket
+                          . wrap "^fg(#ffa500)" "^fg()"
+            , ppVisible = wrap "^bg(grey30)^fg(grey75)" "^fg()^bg()"
+            , ppSep     = " ^p(2)^fg(grey60)^r(3x3)^fg() "
+            , ppWsSep   = " "
+            , ppLayout  = dzenColor colorDodgerBlue ""
+                          . (\x -> case x of
+                                    "Mirror ResizableTall"                   -> pad $ xbm "mtall"
+                                    "ResizableTall"                          -> pad $ xbm "tall"
+                                    "Full"                                   -> pad $ xbm "full"
+                                    "Magnifier GridRatio 1.3333333333333333" -> pad $ xbm "mgrid"
+                                    "GridRatio 1.3333333333333333"           -> pad $ xbm "grid"
+                                    "ReflectX Gimp"                          -> pad $ xbm "reflectx"
+                                    _                                        -> pad x)
+            , ppTitle   = dzenColor foregroundColor "" . wrap leftBracket rightBracket
+            , ppOutput  = hPutStrLn din
             }
+          where
+            leftBracket  = "^fg(" ++ colorDodgerBlue ++ ")[^fg()"
+            rightBracket = "^fg(" ++ colorDodgerBlue ++ ")]^fg()"
+            xbm fname = "^i(" ++ xbmDirectory ++ "/" ++ fname ++ ".xbm)"
+            xbmDirectory = homeDirectory ++ "/.xmonad/dzen"
 
 logHook' din = (dynamicLogWithPP $ pp' din)
                >> updatePointer (Relative 0.5 0.5)
@@ -215,8 +245,7 @@ logHook' din = (dynamicLogWithPP $ pp' din)
 -- layoutHook -----------------------------------------------------------------
 
 tabConfig' = defaultTheme
-  {
-    activeColor   = "#555753"
+  { activeColor   = "#555753"
   , inactiveColor = "#ede9e3"
   , urgentColor   = "#ede9e3"
 
@@ -254,11 +283,11 @@ layouts = avoidStruts
 -}
 -- manageHook -----------------------------------------------------------------
 manageHook' = composeAll
-  [
   -- force floating
-    className =? "MPlayer"        --> doFloat
+  [ className =? "MPlayer"        --> doFloat
   , className =? "Gimp"           --> doFloat
   , className =? "Gajim.py"       --> doFloat
+  --, className =? "Firefox"        --> doFloat
   , appName   =? "Download"       --> doFloat
   , appName   =? "Dialog"         --> doFloat
   , appName   =? "xmessage"       --> doFloat
@@ -281,8 +310,24 @@ manageHook' = composeAll
 -- mouseBindings --------------------------------------------------------------
 
 mouseBindings' (XConfig {XMonad.modMask = modMask}) = M.fromList $
-  [
-    ((modMask, button1), (\w -> focus w >> mouseMoveWindow w))
+  [ ((modMask, button1), (\w -> focus w >> mouseMoveWindow w))
   , ((modMask, button2), (\w -> focus w >> windows W.swapMaster))
   , ((modMask, button3), (\w -> focus w >> Flex.mouseResizeWindow w))
   ]
+
+-- searchList -----------------------------------------------------------------
+lingvoEnRu = Search.searchEngine "lingvo (en->ru)" "http://lingvo.yandex.ru/en?lang=en&search_type=lingvo&st_translate=1&text="
+lingvoRuEn = Search.searchEngine "lingvo (ru->en)" "http://lingvo.yandex.ru/en?lang=ru&search_type=lingvo&st_translate=1&text="
+
+searchList :: [([Char], Search.SearchEngine)]
+searchList = [ ("g", Search.google)
+             , ("l", lingvoEnRu)
+             -- , ("i", Search.isohunt)
+             , ("w", Search.wikipedia)
+             , ("d", Search.dictionary)
+             , ("t", Search.thesaurus)
+             , ("a", Search.amazon)
+             , ("y", Search.youtube)
+             -- , ("e", enro40)
+             -- , ("r", roen40)
+             ]

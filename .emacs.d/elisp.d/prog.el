@@ -11,6 +11,7 @@
         cperl-mode
         emacs-lisp-mode
         erlang-mode
+        forth-mode
         haskell-mode
         html-mode
         lisp-mode

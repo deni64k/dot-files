@@ -9,6 +9,8 @@
  '(file-template-paths '("~/.emacs.d/insert/"))
  '(file-template-mapping-alist
    '(
+     ("\\.lisp$" . "template.lisp")
+     ("\\.asd$" . "template.asd")
      ("\\.el$" . "template.el")
      ("\\.c$" . "template.c")
      ("\\.h$" . "template.h")

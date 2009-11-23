@@ -1,7 +1,8 @@
 ;;; emms.el ---
 
-;; TODO: use emms-auto.el
-
+;; TODO:
+;; * use emms-auto.el
+;; * tune emms-browser-default-format
 (add-to-list 'load-path "~/.emacs.d/elisp/emms/lisp")
 (require 'emms)
 (require 'emms-setup)
