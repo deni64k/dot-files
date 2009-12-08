@@ -1,5 +1,5 @@
 ;;; -*- mode: emacs-lisp; -*-
-;;; Time-stamp: "2009-11-20 07:07:08 (dennis)"
+;;; Time-stamp: "2009-12-03 23:04:30 (dennis)"
 ;;;
 ;;; TODO: сделать некую систему режимов, аля (i-am-at 'home) или (i-am-at 'mfi)
 ;;;       если работа происходит с файлами в ~/work/mfi/projects, то грузить
@@ -23,169 +23,14 @@
                "~/.emacs.d/elisp/rails"
                "~/.emacs.d/elisp/ruby"
                )
-	     load-path
-	     ))
+             load-path
+             ))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; load helpers
 (load-file "~/.emacs.d/elisp.d/helpers.el")
 (load-file "~/.emacs.d/elisp.d/constants.el")
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; the file-coding-system-alist
-(add-to-list 'file-coding-system-alist (cons "/core400/" 'koi8-r))
-(add-to-list 'file-coding-system-alist (cons "/db_agent/" 'koi8-r))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; the modeline
-(line-number-mode t)                      ; show line numbers
-(column-number-mode t)                    ; show column numbers
-(when-available 'size-indication-mode
-  (size-indication-mode t))               ; show file size (emacs 22+)
-(display-time-mode t)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; general settings
-
-;; this sets garbage collection to hundred times of the default
-;; supposedly significantly speeds up startup time
-;; (setq gc-cons-threshold 10000)
-
-;; turns off blink cursor
-(when-available 'blink-cursor-mode
-  (blink-cursor-mode 0))
-
-(transient-mark-mode t)         ; make the current 'selection' visible
-(delete-selection-mode t)       ; delete the selection area with a keypress
-(setq search-highlight t        ; highlight when searching...
-      query-replace-highlight t)    ; ...and replacing
-(fset 'yes-or-no-p 'y-or-n-p)   ; enable one letter y/n answers to yes/no
-
-(defalias 'qrr 'query-replace-regexp) ; search and replace by regular expresion
-
-(global-font-lock-mode t)         ; always do syntax highlighting
-(when (require-maybe 'jit-lock)   ; enable JIT to make font-lock faster
-  (setq jit-lock-stealth-time 1)) ; new with emacs21
-
-(set-language-environment "UTF-8") ; prefer utf-8 for language settings
-
-;; the autosave is typically done by keystrokes, but I'd like to save
-;; after a certain amount of time as well
-(setq auto-save-timeout 1800)
-
-(setq scroll-conservatively 10000)  ; smooth scrolling
-
-(setq completion-ignore-case t      ; ignore case when completing...
-      read-file-name-completion-ignore-case t) ; ...filenames too
-(icomplete-mode t)
-
-(put 'narrow-to-region 'disabled nil) ; enable...
-(put 'erase-buffer 'disabled nil)     ; ... useful things
-
-(when-available 'file-name-shadow-mode ; emacs22+
-  (file-name-shadow-mode 1))           ; be smart about filenames
-                                        ; (understand ~/ etc.)
-(when-available 'set-fringe-mode    ; emacs22+
-  (progn
-    (set-fringe-mode '(nil . 0))
-    (setq indicate-buffer-boundaries 'left)
-    ))
-
-(require-maybe 'generic-x)         ; nice mode for config-files
-
-(mouse-wheel-mode t)            ; turn on mouse's wheel
-
-;; focus over mouse
-;; (when (require-maybe 'follow-mouse)
-;;   (turn-on-follow-mouse))
-
-;; "don't hscroll unless needed"- ? More voodoo lisp.
-(setq hscroll-margin 1)
-
-;; "Redefine the Home/End keys to (nearly) the same as visual studio
-;; behavior... special home and end by Shan-leung Maverick WOO
-;; <sw77@cornell.edu>"
-;; This is complex. In short, the first invocation of Home/End moves
-;; to the beginning of the *text* line. A second invocation moves the
-;; cursor to the beginning of the *absolute* line. Most of the time
-;; this won't matter or even be noticeable, but when it does (in
-;; comments, for example) it will be quite convenient.
-(global-set-key [home] 'negval/smart-home)
-(global-set-key [end] 'negval/smart-end)
-(defun negval/smart-home ()
-  "Odd home to beginning of line, even home to beginning of
-text/code."
-  (interactive)
-  (if (and (eq last-command 'negval/smart-home)
-           (/= (line-beginning-position) (point)))
-      (beginning-of-line)
-    (beginning-of-line-text))
-  )
-(defun negval/smart-end ()
-  "Odd end to end of line, even end to begin of text/code."
-  (interactive)
-  (if (and (eq last-command 'negval/smart-end)
-           (= (line-end-position) (point)))
-      (end-of-line-text)
-    (end-of-line))
-  )
-(defun end-of-line-text ()
-  "Move to end of current line and skip comments and trailing space.
-Require `font-lock'."
-  (interactive)
-  (end-of-line)
-  (let ((bol (line-beginning-position)))
-    (unless (eq font-lock-comment-face (get-text-property bol 'face))
-      (while (and (/= bol (point))
-                  (eq font-lock-comment-face
-                      (get-text-property (point) 'face)))
-        (backward-char 1))
-      (unless (= (point) bol)
-        (forward-char 1) (skip-chars-backward " \t\n"))))
-  ) ;; Done with home and end keys.
-;; But what about the normal use for home and end?
-;; We can still have them! Just prefixed with control.
-(global-set-key [C-home] 'beginning-of-line)
-(global-set-key [C-end] 'end-of-line)
-
-;; What it says. Keeps the cursor in the same relative row during
-;; pgups and dwns.
-(setq scroll-preserve-screen-position t)
-
-;; don't show startup messages
-(setq inhibit-startup-message t
-      inhibit-startup-echo-area-message t)
-
-;; define dirs for cacheing file dirs
-;; see http://www.emacswiki.org/cgi-bin/wiki/FileNameCache
-;; for more tricks with this...
-(when-available 'file-cache-add-directory   ; emacs 22+
-  (progn
-    (defvar cachedirs
-      '("~/" "/etc/"))
-    (dolist (dir cachedirs) (file-cache-add-directory dir))))
-
-;; set frame title / icon title using filename or buffername
-;; little trick (based on http://www.emacswiki.org/cgi-bin/wiki/ShadyTrees)
-;; to replace  /home/foo with ~
-(defun negval/title-format ()
-  (if buffer-file-name
-      (replace-regexp-in-string "\\\\" "/"
-                                (replace-regexp-in-string (regexp-quote (getenv "HOME")) "~"
-                                                          (convert-standard-filename buffer-file-name)))
-    (buffer-name)))
-(setq
- frame-title-format '(:eval (negval/title-format))
- icon-title-format  '(:eval (concat "emacs:" (negval/title-format))))
-
-;; files without terminating newlines really annoy me
-(setq require-final-newline t)
-
-;; editing .xpi files directly in Emacs
-(setq auto-mode-alist (cons '("\\.xpi$" . archive-mode) auto-mode-alist))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; set up url-proxy-services
@@ -216,6 +61,7 @@ Require `font-lock'."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; load some files
+(require-maybe 'generic-x)  ; nice mode for config-files
 (require 'rails)
 (require 'php-mode)
 (require 'diff-plus-mode)
@@ -323,15 +169,14 @@ Require `font-lock'."
 ;; will create an interactive function 'zsh', and bind it to s-<F1>
 ;; 's' is the "windows-key"
 (negval/term-program zsh t (kbd "s-<f1>"))  ; the ubershell
-;; (negval/term-program mutt   t (kbd "s-<f2>"))  ; console mail client
-;; (negval/term-program irssi  t (kbd "s-<f3>"))  ; console irc client
-;; (negval/term-program slrn   t (kbd "s-<f4>"))  ; console nttp client
-;; (negval/term-program raggle t (kbd "s-<f5>"))  ; console feedreader
 
-;; make s-<f10> switch to *scratch*
-(global-set-key (kbd "s-<f10>") (lambda nil (interactive) (switch-to-buffer "*scratch*")))
-(global-set-key (kbd "s-<f11>") (lambda nil (interactive) (find-file "~/.emacs")))
-(global-set-key (kbd "s-<f12>") (lambda nil (interactive) (find-file "~/.emacs.d/elisp.d/")))
+(global-set-key (kbd "s-<f2>") 'gnus)
+(global-set-key (kbd "s-<f5>")  (lambda () (interactive) (find-file "~/projects/")))
+(global-set-key (kbd "s-<f6>")  (lambda () (interactive) (find-file "~/documents/org")))
+(global-set-key (kbd "s-<f9>")  (lambda () (interactive) (switch-to-buffer "*scratch*")))
+(global-set-key (kbd "s-<f10>") (lambda () (interactive) (find-file "~/.emacs")))
+(global-set-key (kbd "s-<f11>") (lambda () (interactive) (find-file "~/.emacs.d/elisp/")))
+(global-set-key (kbd "s-<f12>") (lambda () (interactive) (find-file "~/.emacs.d/elisp.d/")))
 
 (global-set-key (kbd "<f5>") 'revert-buffer)
 
@@ -375,106 +220,18 @@ Require `font-lock'."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; iswitchb
-(when-available 'iswitchb-mode
-  (progn
-    (defun iswitchb-local-keys ()
-      (mapc (lambda (K)
-              (let* ((key (car K)) (fun (cdr K)))
-                (define-key iswitchb-mode-map (edmacro-parse-keys key) fun)))
-            '(("<right>" . iswitchb-next-match)
-              ("<left>"  . iswitchb-prev-match)
-              ("<up>"    . ignore             )
-              ("<down>"  . ignore             ))))
-    (add-hook 'iswitchb-define-mode-map-hook 'iswitchb-local-keys)
-    (setq iswitchb-default-method 'samewindow)
-    (iswitchb-mode t)               ; buffer switching; easier than icicles
-    (require-maybe 'iswitchb-highlight)
-    ))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; SavePlace: this puts the cursor in the last place you editted
-;; a particular file. This is very useful for large files.
-(when (require-maybe 'saveplace)
-  (progn
-    (setq-default save-place t)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; tabbar (no use)
-;; (when (require-maybe 'tabbar)
-;;   (progn
-;;     (tabbar-mode t)
-;;     (global-set-key [C-M-tab] 'tabbar-forward)
-;;     (global-set-key [C-M-S-iso-lefttab] 'tabbar-backward)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; uniquify
-(when (require-maybe 'uniquify)
-  (setq uniquify-buffer-name-style 'post-forward
-        uniquify-strip-common-suffix 't))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  abbrevs (emacs will automagically expand abbreviations)
-;;
-(abbrev-mode t)                 ; enable abbrevs (abbreviations) ...
-(add-hook 'kill-emacs-hook      ; ... end save them upon emacs exit
-          (lambda () (write-abbrev-file abbrev-file-name)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; backups  (emacs will write backups and number them)
-(setq make-backup-files t ; do make backups
-      backup-by-copying t ; and copy them ...
-      backup-directory-alist '(("." . "~/.emacs.d/backups")) ; ... here
-      version-control t
-      kept-new-versions 2
-      kept-old-versions 5
-      delete-old-versions t)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; time-stamps
-;; when there is a "Time-stamp: <>" in the first 10 lines of the file,
-;; emacs will write time-stamp information there when saving the file.
-;; see the top of this file for an example...
-(setq
- time-stamp-active t          ; do enable time-stamps
- time-stamp-line-limit 10     ; check first 10 buffer lines for Time-stamp: <>
- time-stamp-format "%04y-%02m-%02d %02H:%02M:%02S (%u)") ; date format
-(add-hook 'write-file-hooks 'time-stamp) ; update when saving
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; macros to save me some type creating keyboard macros
 (defmacro set-key-func (key expr)
   "macro to save me typing"
-  (list 'local-set-key (list 'kbd key)
-        (list 'lambda nil
-              (list 'interactive nil) expr)))
+  `(local-set-key (kbd ,key)
+        (lambda () (interactive) ,expr)))
 
-(defmacro set-key (key str) (list 'local-set-key (list 'kbd key) str))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Nav is a lightweight solution for Emacs users who want something like
-;; TextMate's file browser, or the Eclipse project view. Unlike these two,
-;; Nav only shows the contents of a single directory at a time, but it allows
-;; recursive searching for filenames using the 'f' key-binding, and recursive
-;; grepping of file contents with the 'g' key-binding.
-(require-maybe 'nav)
-
-;; sunrise-commander: two-pane file manager
-;; TODO: sr-select-window: Wrong type argument: window-live-p, nil
-;; (when (require-maybe 'sunrise-commander)
-;;   (sunrise-mc-keys))
+(defmacro set-key (key str) `(local-set-key (kbd ,key) ,str))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; general settings
+(load-file "~/.emacs.d/elisp.d/general.el")
 (load-file "~/.emacs.d/elisp.d/x.el")
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -485,15 +242,21 @@ Require `font-lock'."
 (load-file "~/.emacs.d/elisp.d/emms.el")
 (load-file "~/.emacs.d/elisp.d/flymake.el")
 (load-file "~/.emacs.d/elisp.d/git.el")
+(load-file "~/.emacs.d/elisp.d/gnus.el")
 (load-file "~/.emacs.d/elisp.d/greek.el")
 (load-file "~/.emacs.d/elisp.d/ispell.el")
+(load-file "~/.emacs.d/elisp.d/iswitchb.el")
 (load-file "~/.emacs.d/elisp.d/jabber.el")
+(load-file "~/.emacs.d/elisp.d/nav.el")
 (load-file "~/.emacs.d/elisp.d/org.el")
+(load-file "~/.emacs.d/elisp.d/saveplace.el")
 (load-file "~/.emacs.d/elisp.d/template-file.el")
-;;(load-file "~/.emacs.d/elisp.d/tramp.el")
+(load-file "~/.emacs.d/elisp.d/tramp.el")
 (load-file "~/.emacs.d/elisp.d/twitter.el")
 (load-file "~/.emacs.d/elisp.d/w3m.el")
 (load-file "~/.emacs.d/elisp.d/yasnippet.el")
+;; TODO: sr-select-window: Wrong type argument: window-live-p, nil
+;; (load-file "~/.emacs.d/elisp.d/sunrise-commander.el")
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -616,23 +379,3 @@ Require `font-lock'."
 
 (setq debug-on-error nil)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; FIN ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; ECB
-;; Последние три строки создают привязки активизации / деактивизации модуля
-;; и переключения редактирования кода в полноэкранный режим. M M e aвключает ECB,
-;; M M e d выгружает ECB, a M M l переключает режим окна редактирования кода.
-;(require 'ecb)
-;(global-set-key (kbd "\e\el") 'ecb-toggle-ecb-windows)
-;(global-set-key (kbd "\e\eea") 'ecb-activate)
-;(global-set-key (kbd "\e\eed") 'ecb-deactivate)
-
-(custom-set-variables
-  ;; custom-set-variables was added by Custom.
-  ;; If you edit it by hand, you could mess it up, so be careful.
-  ;; Your init file should contain only one such instance.
-  ;; If there is more than one, they won't work right.
- '(ecb-layout-name "left1")
- '(ecb-options-version "2.32")
- '(ecb-source-path (quote ("~/projects/")))
- '(ecb-tip-of-the-day nil)
- '(ecb-windows-width 0.25)
- )
