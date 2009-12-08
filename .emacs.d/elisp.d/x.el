@@ -29,6 +29,14 @@
     (progn
       (setq hl-line-face 'hl-line)
       (global-hl-line-mode t))) ;; turn it on for all modes by default
+
+  (when-available 'set-fringe-mode    ; emacs22+
+    (progn
+      (set-fringe-mode '(nil . 0))
+      (setq indicate-buffer-boundaries 'left)
+      ))
+
+  (mouse-wheel-mode t)               ; turn on mouse's wheel
   )
 
 (defvar negval/*cursor-color*)

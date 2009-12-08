@@ -1,4 +1,7 @@
 (add-to-list 'load-path "~/.emacs.d/elisp/w3m")
+
+(require 'w3m)
+
 (autoload 'w3m "w3m" "Interface for w3m on Emacs." t)
 
 (setq browse-url-browser-function 'w3m-browse-url
