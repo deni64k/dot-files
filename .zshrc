@@ -178,9 +178,6 @@ manpath=/(usr/local/man /usr/man /usr/share/man \
 for __path in $HOME/.tmp $HOME/.emacs.d/backups; do
     test -e ${__file} || mkdir -p ${__file}
 done
-# secure some stuff a little bit...
-chmod -R o-rx $HOME/.zshrc $HOME/.zshenv $HOME/.zhistory $HOME/.emacs \
-    $HOME/.emacs.d/backups N
 ################################################################################
 
 ################################################################################
