@@ -282,11 +282,6 @@
             (return (sb-bsd-sockets:socket-accept socket))
           (sb-bsd-sockets:interrupted-error ()))))
 
-(defimplementation call-without-interrupts (fn)
-  (declare (type function fn))
-  (sb-sys:without-interrupts (funcall fn)))
-
-
 
 ;;;; Support for SBCL syntax
 
@@ -839,19 +834,22 @@ Return NIL if the symbol is unbound."
   
 #+#.(swank-backend::sbcl-with-xref-p)
 (progn
-  (defmacro defxref (name)
+  (defmacro defxref (name &optional fn-name)
     `(defimplementation ,name (what)
        (sanitize-xrefs   
         (mapcar #'source-location-for-xref-data
-                (,(find-symbol (symbol-name name) "SB-INTROSPECT")
+                (,(find-symbol (symbol-name (if fn-name
+                                                fn-name
+                                                name))
+                               "SB-INTROSPECT")
                   what)))))
   (defxref who-calls)
   (defxref who-binds)
   (defxref who-sets)
   (defxref who-references)
   (defxref who-macroexpands)
-  #+#.(swank-backend::with-symbol 'who-specializes 'sb-introspect)
-  (defxref who-specializes))
+  #+#.(swank-backend::with-symbol 'who-specializes-directly 'sb-introspect)
+  (defxref who-specializes who-specializes-directly))
 
 (defun source-location-for-xref-data (xref-data)
   (let ((name (car xref-data))
@@ -1144,10 +1142,11 @@ stack."
   (let* ((frame (nth-frame index))
 	 (loc (sb-di:frame-code-location frame))
 	 (vars (frame-debug-vars frame)))
-    (loop for v across vars collect
-          (list :name (sb-di:debug-var-symbol v)
-                :id (sb-di:debug-var-id v)
-                :value (debug-var-value v frame loc)))))
+    (when vars
+      (loop for v across vars collect
+            (list :name (sb-di:debug-var-symbol v)
+                  :id (sb-di:debug-var-id v)
+                  :value (debug-var-value v frame loc))))))
 
 (defimplementation frame-var-value (frame var)
   (let* ((frame (nth-frame frame))
@@ -1380,43 +1379,9 @@ stack."
 
   (defimplementation thread-status (thread)
     (if (sb-thread:thread-alive-p thread)
-        "RUNNING"
-        "STOPPED"))
-  #+#.(swank-backend::sbcl-with-weak-hash-tables)
-  (progn
-    (defparameter *thread-description-map*
-      (make-weak-key-hash-table))
-
-    (defvar *thread-descr-map-lock*
-      (sb-thread:make-mutex :name "thread description map lock"))
-    
-    (defimplementation thread-description (thread)
-      (sb-thread:with-mutex (*thread-descr-map-lock*)
-        (or (gethash thread *thread-description-map*)
-            (short-backtrace thread 6 10))))
-
-    (defimplementation set-thread-description (thread description)
-      (sb-thread:with-mutex (*thread-descr-map-lock*)
-        (setf (gethash thread *thread-description-map*) description)))
-
-    (defun short-backtrace (thread start count)
-      (let ((self (current-thread))
-            (tag (get-internal-real-time)))
-        (sb-thread:interrupt-thread
-         thread
-         (lambda ()
-           (let* ((frames (nthcdr start (sb-debug:backtrace-as-list count))))
-             (send self (cons tag frames)))))
-        (handler-case
-            (sb-ext:with-timeout 0.1
-              (let ((frames (cdr (receive-if (lambda (msg) 
-                                               (eq (car msg) tag)))))
-                    (*print-pretty* nil))
-                (format nil "~{~a~^ <- ~}" (mapcar #'car frames))))
-          (sb-ext:timeout () ""))))
-
-    )
-
+        "Running"
+        "Stopped"))
+  
   (defimplementation make-lock (&key name)
     (sb-thread:make-mutex :name name))
 

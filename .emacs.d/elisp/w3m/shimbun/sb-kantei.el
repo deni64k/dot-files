@@ -1,6 +1,6 @@
 ;;; sb-kantei.el --- shimbun backend for kantei mail magazine backnumber -*- coding: iso-2022-7bit; -*-
 
-;; Copyright (C) 2001, 2003, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+;; Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
 ;; Yuuichi Teranishi <teranisi@gohome.org>
 
 ;; Author: Yuuichi Teranishi <teranisi@gohome.org>
@@ -35,6 +35,8 @@
 
 (defvar shimbun-kantei-groups '("m-magazine-en"
 				"m-magazine-ja"
+				"m-magazine-cn"
+				"m-magazine-kr"
 				"m-magazine-en.aso"
 				"m-magazine-ja.aso"
 				"m-magazine-en.fukuda"
@@ -79,6 +81,10 @@ REbDs'H9$Iy#yM#*J2c'L},(m8K:8?$vTPC%D}YJ[bV#7xw|{\"DJ:_?`V1m_4^+;7+\n\
     (concat (shimbun-url-internal shimbun)
 	    (cond ((string-equal group "m-magazine-en")
 		   "foreign/m-magazine/backnumber/hatoyama.html")
+		  ((string-equal group "m-magazine-cn")
+		   "foreign/m-magazine/backnumber_ch/hatoyama_index.html")
+		  ((string-equal group "m-magazine-kr")
+		   "foreign/m-magazine/backnumber_ko/hatoyama_index.html")
 		  ((string-equal group "m-magazine-en.aso")
 		   "foreign/m-magazine/backnumber/aso.html")
 		  ((string-equal group "m-magazine-ja.aso")
@@ -104,6 +110,10 @@ REbDs'H9$Iy#yM#*J2c'L},(m8K:8?$vTPC%D}YJ[bV#7xw|{\"DJ:_?`V1m_4^+;7+\n\
   (let ((group (shimbun-current-group-internal shimbun)))
     (cond ((string-equal group "m-magazine-en")
 	   "Yukio Hatoyama")
+	  ((string-equal group "m-magazine-cn")
+	   "鸠山由纪夫")
+	  ((string-equal group "m-magazine-kr")
+	   "하토야마 유키오")
 	  ((string-equal group "m-magazine-en.aso")
 	   "Taro Aso")
 	  ((string-equal group "m-magazine-ja.aso")
@@ -129,39 +139,76 @@ REbDs'H9$Iy#yM#*J2c'L},(m8K:8?$vTPC%D}YJ[bV#7xw|{\"DJ:_?`V1m_4^+;7+\n\
 					 &optional range)
   (let* ((group (shimbun-current-group-internal shimbun))
 	 (enp (string-match "\\`m-magazine-en" group))
-	 (regexp (if enp
-		     (eval-when-compile
-		       (concat "<A[\t\n ]+HREF=\""
-			       ;; 1. url
-			       "\\(\\(?:[a-z]+/\\)?"
-			       ;; 2. year
-			       "\\(20[0-9][0-9]\\)"
-			       "/"
-			       ;; 3. month
-			       "\\([01][0-9]\\)"
-			       ;; 4. day of month
-			       "\\([0-3][0-9]\\)"
-			       "\\.html\\)\"[^>]*>[\t\n ]*"
-			       ;; 5. subject
-			       "\\(\\(?:[^\t\n <]+[\t\n ]+\\)*[^\t\n <]+\\)"
-			       "[\t\n ]*</A>[\t\n ]*</TD>[\t\n ]*</TR>"))
-		   (eval-when-compile
-		     (concat "<A[\t\n ]+HREF=\""
-			     ;; 1. url
-			     "\\(\\(?:/jp/m-magazine/backnumber/\\)?"
-			     ;; 2. year
-			     "\\(20[0-9][0-9]\\)"
-			     "/"
-			     ;; 3. month
-			     "\\([01][0-9]\\)"
-			     ;; 4. day of month
-			     "\\([0-3][0-9]\\)"
-			     ;; 5. revision e.g., 2005/0602b.html
-			     "\\([^.]+\\)?"
-			     "\\.html\\)"
-			     "\"[^>]*>[\t\n ]*【[^】]+】[\t\n ]*"
-			     ;; 6. subject
-			     "\\([^<]+\\)"))))
+	 (cnp (string-match "\\`m-magazine-cn" group))
+	 (krp (string-match "\\`m-magazine-kr" group))
+	 (regexp
+	  (cond
+	   (enp
+	    (eval-when-compile
+	      (concat "<A[\t\n ]+HREF=\""
+		      ;; 1. url
+		      "\\(\\(?:[a-z]+/\\)?"
+		      ;; 2. year
+		      "\\(20[0-9][0-9]\\)"
+		      "/"
+		      ;; 3. month
+		      "\\([01][0-9]\\)"
+		      ;; 4. day of month
+		      "\\([0-3][0-9]\\)"
+		      "\\.html\\)\"[^>]*>[\t\n ]*"
+		      ;; 5. subject
+		      "\\(\\(?:[^\t\n <]+[\t\n ]+\\)*[^\t\n <]+\\)"
+		      "[\t\n ]*</A>[\t\n ]*</TD>[\t\n ]*</TR>")))
+	   (cnp
+	    (eval-when-compile
+	      (concat "<a[\t\n ]+href=\""
+		      ;; 1. url
+		      "\\(\\(?:/foreign/m-magazine/backnumber_ch/\\)?"
+		      ;; 2. year
+		      "\\(20[0-9][0-9]\\)"
+		      "/"
+		      ;; 3. month
+		      "\\([01][0-9]\\)"
+		      ;; 4. day of month
+		      "\\([0-3][0-9]\\)"
+		      "\\.html\\)\"[^>]*>[\t\n ]*"
+		      ;; 5. subject
+		      "\\(\\(?:[^\t\n <]+[\t\n ]+\\)*[^\t\n <]+\\)"
+		      "[\t\n ]*</a>[\t\n ]*</td>[\t\n ]*</tr>")))
+	   (krp
+	    (eval-when-compile
+	      (concat "<a[\t\n ]+href=\""
+		      ;; 1. url
+		      "\\(\\(?:/foreign/m-magazine/backnumber_ko/\\)?"
+		      ;; 2. year
+		      "\\(20[0-9][0-9]\\)"
+		      "/"
+		      ;; 3. month
+		      "\\([01][0-9]\\)"
+		      ;; 4. day of month
+		      "\\([0-3][0-9]\\)"
+		      "\\.html\\)\"[^>]*>[\t\n ]*"
+		      ;; 5. subject
+		      "\\(\\(?:[^\t\n <]+[\t\n ]+\\)*[^\t\n <]+\\)"
+		      "[\t\n ]*</a>[\t\n ]*</td>[\t\n ]*</tr>")))
+	   (t
+	    (eval-when-compile
+	      (concat "<A[\t\n ]+HREF=\""
+		      ;; 1. url
+		      "\\(\\(?:/jp/m-magazine/backnumber/\\)?"
+		      ;; 2. year
+		      "\\(20[0-9][0-9]\\)"
+		      "/"
+		      ;; 3. month
+		      "\\([01][0-9]\\)"
+		      ;; 4. day of month
+		      "\\([0-3][0-9]\\)"
+		      ;; 5. revision e.g., 2005/0602b.html
+		      "\\([^.]+\\)?"
+		      "\\.html\\)"
+		      "\"[^>]*>[\t\n ]*【[^】]+】[\t\n ]*"
+		      ;; 6. subject
+		      "\\([^<]+\\)")))))
 	 (parent (shimbun-index-url shimbun))
 	 (from (shimbun-from-address shimbun))
 	 year month mday url subject id headers)
@@ -171,7 +218,7 @@ REbDs'H9$Iy#yM#*J2c'L},(m8K:8?$vTPC%D}YJ[bV#7xw|{\"DJ:_?`V1m_4^+;7+\n\
 	(replace-match "\n")))
     (goto-char (point-min))
     (while (re-search-forward regexp nil t)
-      (if enp
+      (if (or enp cnp krp)
 	  (setq year (string-to-number (match-string 2))
 		month (string-to-number (match-string 3))
 		mday (string-to-number (match-string 4))
@@ -206,11 +253,10 @@ REbDs'H9$Iy#yM#*J2c'L},(m8K:8?$vTPC%D}YJ[bV#7xw|{\"DJ:_?`V1m_4^+;7+\n\
     (if (and (search-forward "<pre>" nil t)
 	     (progn
 	       (setq start (match-beginning 0))
-	       (re-search-forward "\\(</pre>\\)\
-\\(?:[\t\n ]*<[^>]+>\\)*[\t\n ]*</html>"
-				  nil t)))
+	       (goto-char (point-max))
+	       (search-backward "</pre>" nil t)))
 	(progn
-	  (delete-region (match-end 1) (point-max))
+	  (delete-region (match-end 0) (point-max))
 	  (insert "\n")
 	  (delete-region (point-min) start)
 	  t)
@@ -233,7 +279,8 @@ go[\t\n ]+to[\t\n ]+top[\t\n ]+of[\t\n ]+the[\t\n ]+page[\t\n ]*</a>\
 	       (progn
 		 (setq section (regexp-quote (match-string 1))
 		       start (match-end 0))
-		 (re-search-forward (concat "\[\t\n ]*<!--/" section "-->")
+		 (re-search-forward (concat "\[\t\n ]*<!--/" section
+					    "\\(?:から\\)?-->")
 				    nil t)))
 	  (progn
 	    (setq end (match-beginning 0))
@@ -242,11 +289,20 @@ go[\t\n ]+to[\t\n ]+top[\t\n ]+of[\t\n ]+the[\t\n ]+page[\t\n ]*</a>\
 		     (delete-region end (match-end 0))
 		     (insert "\n&#012;\n")
 		     (and (re-search-forward (concat "\[\t\n ]*<!--/" section
-						     "-->")
+						     "\\(?:から\\)?-->")
 					     nil t)
 			  (setq end (match-beginning 0)))))
-	    (delete-region end (point-max))
-	    (insert "\n")
+	    (if (and (re-search-forward "\
+<div[\t\n ]+\\(?:[^\t\n >]+[\t\n ]+\\)*align=\"center\"" nil t)
+		     (shimbun-end-of-tag "div" t))
+		(progn
+		  (delete-region (match-end 1) (point-max))
+		  (insert "\n")
+		  (goto-char end)
+		  (delete-region end (match-beginning 3))
+		  (insert "\n<div align=\"left\">\n--&nbsp;<br>\n"))
+	      (delete-region end (point-max))
+	      (insert "\n"))
 	    (delete-region (point-min) start))
 	;; Remove style sheet.
 	(goto-char (point-min))

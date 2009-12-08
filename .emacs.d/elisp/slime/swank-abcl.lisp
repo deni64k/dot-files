@@ -183,9 +183,6 @@
 
 ;;;; Unix signals
 
-(defimplementation call-without-interrupts (fn)
-  (funcall fn))
-
 (defimplementation getpid ()
   (handler-case 
       (let* ((runtime 
@@ -232,13 +229,16 @@
 
 (defimplementation arglist (fun)
   (cond ((symbolp fun)
-         (multiple-value-bind (arglist present) 
-             (or (sys::arglist fun)
-                 (and (fboundp fun)
-                      (typep (symbol-function fun) 'standard-generic-function)
-                      (let ((it (mop::generic-function-lambda-list (symbol-function fun))))
-                        (values it it))))
-           (if present arglist :not-available)))
+          (multiple-value-bind (arglist present) 
+              (sys::arglist fun)
+            (when (and (not present)
+                       (fboundp fun)
+                       (typep (symbol-function fun) 'standard-generic-function))
+              (setq arglist
+                    (mop::generic-function-lambda-list (symbol-function fun))
+                    present
+                    t))
+            (if present arglist :not-available)))
         (t :not-available)))
 
 (defimplementation function-name (function)
@@ -584,18 +584,6 @@ part of *sysdep-pathnames* in swank.loader.lisp.
 
   (defimplementation thread-status (thread)
     (format nil "Thread is ~:[dead~;alive~]" (threads:thread-alive-p thread)))
-
-  ;; XXX should be a weak hash table
-  (defparameter *thread-description-map* (make-hash-table)) 
-
-  (defimplementation thread-description (thread) 
-    (threads:synchronized-on *thread-description-map*
-      (or (gethash thread *thread-description-map*)
-          "")))
-
-  (defimplementation set-thread-description (thread description) 
-    (threads:synchronized-on *thread-description-map*
-      (setf (gethash thread *thread-description-map*) description)))
 
   (defimplementation make-lock (&key name)
     (declare (ignore name))

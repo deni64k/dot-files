@@ -12,7 +12,7 @@
 @set EDITION 3.0-alpha
 @set SLIMEVER 3.0-alpha
 @c @set UPDATED @today{}
-@set UPDATED @code{$Date: 2009-10-10 13:44:34 $}
+@set UPDATED @code{$Date: 2009-11-18 10:51:34 $}
 @set TITLE SLIME User Manual
 @settitle @value{TITLE}, version @value{EDITION}
 
@@ -676,9 +676,10 @@ the interactions.
 The buffer @code{*inferior-lisp*} contains the Lisp process's own
 top-level. This direct access to Lisp is useful for troubleshooting,
 and some degree of @SLIME{} integration is available using the
-@code{inferior-slime-mode}. However, in normal use we recommend using
-the fully-integrated @SLIME{} @REPL{} (@pxref{REPL}) and ignoring the
-@code{*inferior-lisp*} buffer.
+inferior-slime-mode.  Many people load the better integrated @SLIME{}
+@REPL{} contrib module (@pxref{REPL}) and ignore
+the @code{*inferior-lisp*} buffer.  (@pxref{Loading Contribs} for
+information on how to enable the REPL.)
 
 @c ----------------------- 
 @node Multithreading
@@ -780,7 +781,7 @@ You can assign or change default key bindings globally using the
 which binds @kbd{C-c s} to the function @code{slime-selector}.
 
 Alternatively, if you want to assign or change a key binding in just a
-particular slime mode, you can use the @code{global-set-key} function
+particular slime mode, you can use the @code{define-key} function
 in your @file{~/.emacs} file like this:
 @example
 (define-key slime-repl-mode-map (kbd "C-c ;") 
@@ -2126,6 +2127,22 @@ looks like:
 After starting SLIME, the commands of both packages should be
 available.
 
+The REPL and @code{slime-fancy} modules deserve special mention.  Many
+users consider the REPL (@pxref{REPL}) essential
+while @code{slime-fancy} (@pxref{slime-fancy}) loads the REPL and
+almost all of the popular contribs.  So, if you aren't sure what to
+choose start with:
+
+@example
+(slime-setup '(slime-repl)) ; repl only
+@end example
+
+If you like what you see try this:
+
+@example
+(slime-setup '(slime-fancy)) ; almost everything
+@end example
+
 @c ----------------------- 
 @node REPL
 @section REPL: the ``top level''
@@ -2520,6 +2537,10 @@ you will get errors about missing symbols.
 @cmditem{slime-load-system NAME}
 Compile and load an ASDF system.  The default system name is taken
 from the first file matching *.asd in the current directory.
+@cmditem{slime-open-system NAME &optional LOAD}
+Open all files in a system, optionally load it if LOAD is non-nil.
+@cmditem{slime-browse-system NAME}
+Browse files in a system using Dired.
 @end table
 
 The package also installs some new REPL shortcuts (@pxref{Shortcuts}):
@@ -2533,6 +2554,10 @@ Compile (but not load) an ASDF system.
 Recompile (but not load) an ASDF system.
 @item force-load-system
 Recompile and load an ASDF system.
+@item open-system
+Open all files in a system.
+@item browse-system
+Browse files in a system using Dired.
 @end table
 
 @node Banner
