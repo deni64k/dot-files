@@ -1,5 +1,5 @@
 ;;; %b ---
-;; Copyright (c) %Y, %U <%a>
+;;; Copyright (c) %Y, %U <%a>
 
 %@
 
