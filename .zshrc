@@ -148,6 +148,7 @@ compinit
 # Shell functions
 setenv() { typeset -x "${1}${1:+=}${(@)argv[2,$#]}" }  # csh compatibility
 freload() { while (( $# )); do; unfunction $1; autoload -U $1; shift; done }
+strerror() { perl -MPOSIX -e "print strerror($1).\"\\n\";" }
 
 # Where to look for autoloaded function definitions
 fpath=($fpath ~/.zfunc)
