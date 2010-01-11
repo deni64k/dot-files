@@ -1458,6 +1458,12 @@ The default condition handler for timer functions (see
         (assert (integerp port))
         port))))
 
+(defun slime-toggle-debug-on-swank-error ()
+  (interactive)
+  (if (slime-eval `(swank:toggle-debug-on-swank-error))
+      (message "Debug on SWANK error enabled.")
+      (message "Debug on SWANK error disabled.")))
+
 ;;; Words of encouragement
 
 (defun slime-user-first-name ()
@@ -1654,7 +1660,7 @@ EVAL'd by Lisp."
   (condition-case error
       (slime-net-read)
     (error
-     (debug)
+     (debug 'error error)
      (slime-net-close process t)
      (error "net-read error: %S" error))))
 
@@ -2210,7 +2216,9 @@ or nil if nothing suitable can be found.")
   ;; slime-autodoc.)  If this ever happens again, returning the
   ;; following will make debugging much easier:
   :slime-eval-async)
-  
+
+(put 'slime-eval-async 'lisp-indent-function 1)
+
 ;;; These functions can be handy too:
 
 (defun slime-connected-p ()
@@ -2598,6 +2606,7 @@ between compiler notes and to display their full details."
   (interactive)
   (slime-compile-file t))
 
+;;; FIXME: This should become a DEFCUSTOM
 (defvar slime-compile-file-options '()
   "Plist of additional options that C-c C-k should pass to Lisp.
 Currently only :fasl-directory is supported.")
@@ -3865,17 +3874,18 @@ function name is prompted."
            (slime-show-xrefs file-alist 'definition name
                              (slime-current-package))))))
 
+(defvar slime-edit-uses-xrefs 
+  '(:calls :macroexpands :binds :references :sets :specializes))
+
 ;;; FIXME. TODO: Would be nice to group the symbols (in each
 ;;;              type-group) by their home-package.
 (defun slime-edit-uses (symbol)
   "Lookup all the uses of SYMBOL."
   (interactive (list (slime-read-symbol-name "Edit Uses of: ")))
-  (slime-xrefs '(:calls :macroexpands
-                 :binds :references :sets
-                 :specializes) 
+  (slime-xrefs slime-edit-uses-xrefs
                symbol
                #'(lambda (xrefs type symbol package snapshot)
-                   (cond 
+                   (cond
                      ((null xrefs)
                       (message "No xref information found for %s." symbol))
                      ((and (slime-length= xrefs 1)          ; one group
@@ -3885,7 +3895,7 @@ function name is prompted."
                         (slime-pop-to-location loc)))
                      (t
                       (slime-push-definition-stack)
-                      (slime-show-xref-buffer xrefs type symbol 
+                      (slime-show-xref-buffer xrefs type symbol
                                               package snapshot))))))
 
 (defun slime-analyze-xrefs (xrefs)
@@ -4348,18 +4358,6 @@ For other contexts we return the symbol at point."
           (t 
            name))))
 
-(defun slime-at-list-p (&optional skip-blanks)
-  (save-excursion
-    (when skip-blanks 
-      (slime-forward-blanks))
-    (ignore-errors 
-      (= (point) (progn (down-list 1) (backward-up-list 1) (point))))))
-
-(defun slime-at-expression-p (pattern &optional skip-blanks)
-  (when (slime-at-list-p skip-blanks)
-    (save-excursion
-      (down-list 1)
-      (slime-in-expression-p pattern))))
 
 (defun slime-in-expression-p (pattern)
   "A helper function to determine the current context.
@@ -5016,7 +5014,7 @@ When displaying XREF information, this goes to the previous reference."
                              :complained)))))))
 
 (defun slime-aggregate-compilation-results (results)
-  `(:complilation-result
+  `(:compilation-result
     ,(reduce #'append (mapcar #'slime-compilation-result.notes results))
     ,(every #'slime-compilation-result.successp results)
     ,(reduce #'+ (mapcar #'slime-compilation-result.duration results))))
@@ -5230,7 +5228,8 @@ argument is given, with CL:MACROEXPAND."
       (set-process-sentinel connection sentinel)
       (when (and kill process)
         (sleep-for 0.2)
-        (kill-process process)))))
+        (unless (memq (process-status process) '(exit signal))
+          (kill-process process))))))
 
 (defun slime-quit-sentinel (process message)
   (assert (process-status process) 'closed)
@@ -6690,7 +6689,10 @@ If ARG is negative, move forwards."
 Each element is a list (KEY DESCRIPTION FUNCTION).
 DESCRIPTION is a one-line description of what the key selects.")
 
-(defun slime-selector ()
+(defvar slime-selector-other-window nil
+  "If non-nil use switch-to-buffer-other-window.")
+
+(defun slime-selector (&optional other-window)
   "Select a new buffer by type, indicated by a single character.
 The user is prompted for a single character indicating the method by
 which to choose a new buffer. The `?' character describes the
@@ -6700,18 +6702,19 @@ See `def-slime-selector-method' for defining new methods."
   (interactive)
   (message "Select [%s]: " 
            (apply #'string (mapcar #'car slime-selector-methods)))
-  (let* ((ch (save-window-excursion
+  (let* ((slime-selector-other-window other-window)
+         (ch (save-window-excursion
                (select-window (minibuffer-window))
                (read-char)))
          (method (find ch slime-selector-methods :key #'car)))
-    (cond ((null method)
+    (cond (method 
+           (funcall (third method)))
+          (t
            (message "No method for character: ?\\%c" ch)
            (ding)
            (sleep-for 1)
            (discard-input)
-           (slime-selector))
-          (t
-           (funcall (third method))))))
+           (slime-selector)))))
 
 (defmacro def-slime-selector-method (key description &rest body)
   "Define a new `slime-select' buffer selection method.
@@ -6731,6 +6734,8 @@ switch-to-buffer."
                             (ding))
                            ((get-buffer-window buffer)
                             (select-window (get-buffer-window buffer)))
+                           (slime-selector-other-window
+                            (switch-to-buffer-other-window buffer))
                            (t
                             (switch-to-buffer buffer)))))))
     `(setq slime-selector-methods
@@ -6744,12 +6749,17 @@ switch-to-buffer."
     (insert "Select Methods:\n\n")
     (loop for (key line function) in slime-selector-methods
           do (insert (format "%c:\t%s\n" key line)))
+    (goto-char (point-min))
     (help-mode)
-    (display-buffer (current-buffer) t)
-    (shrink-window-if-larger-than-buffer 
-     (get-buffer-window (current-buffer))))
+    (display-buffer (current-buffer) t))
   (slime-selector)
   (current-buffer))
+
+(pushnew (list ?4 "Select in other window" (lambda () (slime-selector t)))
+         slime-selector-methods :key #'car)
+
+(def-slime-selector-method ?q "Abort."
+  (top-level))
 
 (def-slime-selector-method ?i
   "*inferior-lisp* buffer."
@@ -7638,6 +7648,7 @@ confronted with nasty #.-fu."
       ("swank::compile-file" (("swank::compile-file" 
                                "swank::compile-file-for-emacs"
                                "swank::compile-file-if-needed"
+                               "swank::compile-file-output"
                                "swank::compile-file-pathname")
                               "swank::compile-file"))
       ("cl:m-v-l" (nil "")))
@@ -7705,20 +7716,26 @@ Confirm that SUBFORM is correctly located."
        (cl-user::bar))
       ("(defun foo ()
           #+#.'(:and) (/ 1 0))"
-       (/ 1 0)))
+       (/ 1 0)) 
+      ("(defun foo () pkg-does-not-exist:symbol)" 
+       pkg-does-not-exist:symbol)
+      ("(defun foo () swank:symbol-does-not-exist)"
+       swank:symbol-does-not-exist)
+      ("(defun foo (x) ,x)" \,x)
+      ("(defun foo () #@foo)" @foo))
   (slime-check-top-level)    
-  (with-temp-buffer 
+  (with-temp-buffer
     (lisp-mode)
     (insert program)
-    (setq slime-buffer-package ":swank")
-    (slime-compile-string (buffer-string) 1)
-    (setq slime-buffer-package ":cl-user")
-    (slime-sync-to-top-level 5)
-    (goto-char (point-max))
-    (slime-previous-note)
-    (slime-check error-location-correct
-      (equal (read (current-buffer))
-             subform)))
+    (let ((font-lock-verbose nil))
+      (setq slime-buffer-package ":swank")
+      (slime-compile-string (buffer-string) 1)
+      (setq slime-buffer-package ":cl-user")
+      (slime-sync-to-top-level 5)
+      (goto-char (point-max))
+      (slime-previous-note)
+      (slime-check error-location-correct
+        (equal (read (current-buffer)) subform))))
   (slime-check-top-level))
 
 (def-slime-test (compile-file (:fails-for "allegro" "lispworks" "clisp"))
@@ -8307,29 +8324,7 @@ and skips comments."
     (slime-forward-cruft)
     (forward-sexp)))
 
-(defun slime-forward-cruft ()
-  "Move forward over whitespace, comments, reader conditionals."
-  (while (slime-point-moves-p (slime-forward-blanks)
-                              (slime-forward-any-comment)
-                              (slime-forward-reader-conditional))))
-
-(defun slime-forward-blanks ()
-  "Move forward over all whitespace and newlines at point."
-  (ignore-errors
-    (while (slime-point-moves-p
-             (skip-syntax-forward " ")
-             ;; newlines aren't in lisp-mode's whitespace syntax class
-             (when (eolp) (forward-char))))))
-
-(defun slime-forward-any-comment ()
-  "Skip the whole comment at point, or the comment where point is
-within. This includes nested comments (#| ... |#)."
-  (forward-comment (buffer-size)) ; We may be exactly in front of a semicolon.
-  (when-let (comment-start (nth 8 (slime-current-parser-state)))
-    (goto-char comment-start)
-    (forward-comment (buffer-size))))
-
-(defvar slime-reader-conditionals-regexp
+(defconst slime-reader-conditionals-regexp
   ;; #!+, #!- are SBCL specific reader-conditional syntax.
   ;; We need this for the source files of SBCL itself.
   (regexp-opt '("#+" "#-" "#!+" "#!-")))
@@ -8339,10 +8334,20 @@ within. This includes nested comments (#| ... |#)."
   (when (looking-at slime-reader-conditionals-regexp)
     (goto-char (match-end 0))
     (let* ((plus-conditional-p (eq (char-before) ?+))
-           (result (slime-eval-feature-expression (read (current-buffer)))))
+           (result (slime-eval-feature-expression 
+                    (condition-case e
+                        (read (current-buffer))
+                      (invalid-read-syntax 
+                       (signal 'slime-unknown-feature-expression (cdr e)))))))
       (unless (if plus-conditional-p result (not result))
         ;; skip this sexp
         (slime-forward-sexp)))))
+
+(defun slime-forward-cruft ()
+  "Move forward over whitespace, comments, reader conditionals."
+  (while (slime-point-moves-p (skip-chars-forward "[:space:]")
+                              (forward-comment (buffer-size))
+                              (inline (slime-forward-reader-conditional)))))
 
 (defun slime-keywordify (symbol)
   "Make a keyword out of the symbol SYMBOL."
@@ -8356,7 +8361,8 @@ within. This includes nested comments (#| ... |#)."
 
 (put 'slime-unknown-feature-expression
      'error-conditions '(slime-unknown-feature-expression 
-                         slime-incorrect-feature-expression))
+                         slime-incorrect-feature-expression
+                         error))
 
 ;; FIXME: let it crash
 ;; FIXME: the length=1 constraint is bogus
@@ -8935,7 +8941,7 @@ If they are not, position point at the first syntax error found."
           slime-eval-feature-expression
           slime-forward-sexp
           slime-forward-cruft
-          slime-forward-any-comment
+          slime-forward-reader-conditional
           )))
 
 (provide 'slime)

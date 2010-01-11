@@ -1,3 +1,393 @@
+2010-01-08  Stas Boukarev  <stassats@gmail.com>
+
+	* swank-asdf.lisp: Doing list-all-systems-in-central-registry
+	might be quite slow since it accesses a file-system,
+	so run it once at the background to initialize fs caches.
+
+2010-01-06  Tobias C. Rittweiler  <tcr@freebits.de>
+
+	* swank-arglists.lisp (interesting-variable-p): Exclude keywords
+	from being candidates for "display variable content" autodoc
+	feature.
+	(print-decoded-arglist): Slightly better arglist printing if
+	`slime-autodoc-use-multiline-p' is true.
+	(parse-raw-form): Make it able to parse strings.
+
+	* slime-autodoc.el (autodoc.1 [test]): Add more cases.
+
+2010-01-06  Tobias C. Rittweiler  <tcr@freebits.de>
+
+	* slime-autodoc.el (slime-check-autodoc-at-point): Bind
+	`slime-autodoc-use-multiline-p' to nil for normalized test
+	results.
+
+2010-01-06  Tobias C. Rittweiler  <tcr@freebits.de>
+
+	* swank-arglists.lisp (extract-cursor-marker): Make sure to
+	recurse only if the form, to be recursed into, is a cons.
+
+	Reported by Johannes Grødem.
+
+2010-01-06  Tobias C. Rittweiler  <tcr@freebits.de>
+
+	* swank-arglists.lisp (arglist-dispatch ['declare]): Normalize
+	`vars' to `variables'.
+	(arglist-for-type-declaration): Ditto.
+
+	* slime-autodoc (autodoc.1 [test]): Reorganize test, add comments,
+	add cases to test declarations.
+
+2010-01-05  Stas Boukarev  <stassats@gmail.com>
+
+	* slime-asdf.el (slime-save-system): New function for saving
+	system's files.
+
+2010-01-05  Helmut Eller  <heller@common-lisp.net>
+
+	Fix "other window" selector in inferior-slime-mode.
+
+	* inferior-slime.el ([selector-method] r): Return the buffer
+	instead of switching directly.
+
+2010-01-03  Tobias C. Rittweiler  <tcr@freebits.de>
+
+	* slime-autodoc.el (slime-autodoc-mode): Only display
+	"enabled"/"disabled" message if called interactively.
+
+2010-01-03  Tobias C. Rittweiler  <tcr@freebits.de>
+
+	* slime-autodoc.el (slime-autodoc): Renamed from
+	`slime-compute-autodoc'; now also interactive.
+	(slime-autodoc-mode): Implement toggling properly. Make modeline
+	string "Autodoc" rather than "Eldoc".
+	(slime-autodoc-maybe-enable): Adapted accordingly.
+
+2010-01-03  Stas Boukarev  <stassats@gmail.com>
+
+	* slime-repl.el (sldb-insert-frame-call-to-repl): New function
+	for inserting a call to a frame into the REPL. Bound to C-y in SLDB.
+
+2010-01-03  Tobias C. Rittweiler  <tcr@freebits.de>
+
+	* swank-arglists.lisp (arglist-index): Return NIL if more
+	arguments were provided than are allowed.
+	(form-path-to-arglist-path): Adapted accordingly.
+
+	* slime-autodoc.el (autodoc.1 [test]): Add relevant test cases.
+
+2010-01-03  Tobias C. Rittweiler  <tcr@freebits.de>
+
+	* slime-indentation-fu.el, swank-indentation-fu.lisp: Delete
+	contrib. Never worked quite right, and the necessary
+	infrastructure has since been gone.
+
+2010-01-03  Stas Boukarev  <stassats@gmail.com>
+
+	* swank-asdf.lisp (asdf-system-loaded-p): Don't return a
+	generalized boolean, because numbers may be too large for Emacs.
+
+2009-12-30  Tobias C. Rittweiler  <tcr@freebits.de>
+
+	* slime-c-p-c.el (complete-form [test]): Set
+	`slime-buffer-package' after changing to lisp-mode because
+	changing major-mode kills buffer-local variables.
+
+2009-12-30  Tobias C. Rittweiler  <tcr@freebits.de>
+
+	* swank-arglists.lisp (extract-cursor-marker): Fix typo.
+	(autodoc): Do not try to display variable content for T and NIL.
+	(interesting-variable-p): New helper.
+
+2009-12-29  Tobias C. Rittweiler  <tcr@freebits.de>
+
+	* slime-autodoc.el (slime-compute-autodoc): Revert last change.
+	We must return nil to decline.
+
+2009-12-29  Tobias C. Rittweiler  <tcr@freebits.de>
+
+	More cleanup.
+
+	The RP swank:arglist-for-echo-area is now called swank:autodoc.
+
+	* swank-arglists.lisp (autodoc): Renamed from
+	arglist-for-echo-area.
+	(variable-desc-for-echo-area): Deleted. Above function subsumes
+	this functionality now.
+	(print-variable-to-string): Extracted from
+	variable-desc-for-echo-area.
+
+	* slime-autodoc.el (slime-retrieve-arglist): Change RPC.
+	(slime-make-autodoc-rpc-form): Ditto.
+	(slime-autodoc-cache-type): Deleted.
+	(slime-autodoc-cache): Deleted.
+	(slime-autodoc-last-buffer-form): Replacement.
+	(slime-autodoc-last-autodoc): Replacement.
+	(slime-get-cached-autodoc): Adapted accordingly.
+	(slime-store-into-autodoc-cache): Adapted accordingly.
+	(slime-compute-autodoc): Simplified slightly.
+	(autodoc.1 [test]): Extended.
+
+2009-12-29  Tobias C. Rittweiler  <tcr@freebits.de>
+
+	Some cleanup of arglist code.
+
+	* swank-arglists.lisp (remove-from-tree-if): Deleted.
+	(remove-from-tree): Deleted.
+	(maybecall): Deleted.
+	(arglist-path-to-parameter): Deleted.
+	(arglist-path-to-nested-arglist): Deleted.
+	(last-arg): Deleted.
+	(compute-arglist-index): Deleted.
+
+	(form-path-to-arglist-path): New.
+	(arglist-index): New.
+	(extract-cursor-marker): New.
+	(find-subform-with-arglist): Adapted.
+	(find-immediately-containing-arglist): Adapted.
+	(arglist-for-echo-area): Adapted.
+
+2009-12-29  Tobias C. Rittweiler  <tcr@freebits.de>
+
+	* slime-parse.el (slime-parse-form-until): Properly deal with #'
+	prefix.
+	(form-up-to-point.1 [test]): Extend.
+
+2009-12-25  Tobias C. Rittweiler  <tcr@freebits.de>
+
+	* swank-arglists.lisp (delete-given-args): Make sure to properly
+	delete provided-args.
+
+	* slime-c-p-c.el (complete-form [test]): Extend. Succeeds now.
+
+2009-12-23  Tobias C. Rittweiler  <tcr@freebits.de>
+
+	* slime-parse.el (form-up-to-point.1 [test]): Fix test case.
+
+2009-12-23  Tobias C. Rittweiler  <tcr@freebits.de>
+
+	* slime-c-p-c.el (complete-symbol* [test]): Fix test case.
+
+2009-12-23  Tobias C. Rittweiler  <tcr@freebits.de>
+
+	* slime-autodoc.el (autodoc.1 [test]): Add a test case involving
+	DEFMETHOD.
+
+	* slime-c-p-c.el (complete-form [test]): New test. Fails for the
+	moment.
+
+	Reported by Matthias Koeppe.
+
+2009-12-22  Helmut Eller  <heller@common-lisp.net>
+
+	Commands to save&restore image files without disconnecting.
+
+	* slime-snapshot.el: New file.
+	* swank-snapshot.lisp: New file.
+
+2009-12-21  Tobias C. Rittweiler  <tcr@freebits.de>
+
+	* swank-arglists.lisp (completions-for-keyword): Return nil
+	instead of :not-available because the function is supposed to
+	return a list of available completions.
+
+	Adapted from patch by Ariel Badichi.
+
+2009-12-21  Tobias C. Rittweiler  <tcr@freebits.de>
+
+	Today's cleanup day.
+
+	* slime-parse.el (slime-incomplete-form-at-point)
+	(slime-parse-sexp-at-point)
+	(slime-has-symbol-syntax-p)
+	(slime-incomplete-sexp-at-point)
+	(slime-parse-extended-operator-name)
+	(slime-extended-operator-name-parser-alist)
+	(slime-make-extended-operator-parser/look-ahead)
+	(slime-parse-extended-operator/proclaim)
+	(slime-parse-extended-operator/declare)
+	(slime-parse-extended-operator/check-type)
+	(slime-parse-extended-operator/the)
+	(slime-nesting-until-point)
+	(slime-make-form-spec-from-string)
+	(slime-enclosing-form-specs)
+	(slime-ensure-list)
+	(slime-beginning-of-string)
+	(slime-check-enclosing-form-specs)
+	(enclosing-form-specs.1 [test]): Deleted. The new arglist code made
+	all this superfluous.
+
+	* slime-autodoc.el (slime-autodoc-accuracy-depth): New defcustom.
+	(slime-retrieve-arglist): Return :not-available if appropriate.
+	(slime-arglist): Use `slime-retrieve-arglist'. Delete reference to
+	undefined variable.
+	(slime-autodoc-thing-at-point): Deleted, not needed anymore.
+	(slime-autodoc-hook): Deleted.
+	(slime-autodoc-worthwhile-p): Deleted.
+	(slime-make-autodoc-rpc-form): Simplified.
+	(slime-compute-autodoc-internal): Merged with `slime-compute-autodoc'.
+	(slime-compute-autodoc): Removed usage of old
+	infrastructure. Simplified.
+
+	* swank-arglists.lisp (print-decoded-arglist): Print ((:foo bar)
+	quux) &key parameters correctly.
+	(variable-desc-for-echo-area): Return :not-available, not nil.
+
+	* slime-c-p-c.el (slime-complete-symbol*-fancy-bit): Adapted for
+	new return value of `slime-retrieve-arglist'.
+
+	* slime-fancy.el: Disable `slime-mdot-fu' contrib because that has
+	to be adapted to new infrastructure.
+
+	* slime-sbcl-exts.el (slime-enable-autodoc-for-sb-assem:inst):
+	Deleted. Used old infrastructure.
+
+2009-12-21  Tobias C. Rittweiler  <tcr@freebits.de>
+
+	* slime-parse.el (slime-parse-form-upto-point): Rewritten to make
+	it more performant.
+	(slime-parse-form-until): New helper.
+
+2009-12-21  Tobias C. Rittweiler  <tcr@freebits.de>
+
+	* slime-package-fu.el (slime-at-expression-p): Moved from
+	slime.el.
+	(slime-goto-next-export-clause): Replace `slime-forward-blanks'.
+
+	* slime-parse.el (slime-parse-sexp-at-point)
+	(slime-parse-extended-operator-name): Replace
+	`slime-forward-blanks'.
+
+2009-12-19  Stas Boukarev  <stassats@gmail.com>
+
+	* swank-asdf.lisp (asdf:operation-done-p): ASDF included with some
+	implementations doesn't have AROUND method combination, so guard
+	against its usage. This will prevent swank:reload-system from working,
+	but it will let load swank-asdf.
+	Reported by Mark Evenson.
+
+2009-12-19  Tobias C. Rittweiler  <tcr@freebits.de>
+
+	* slime-asdf.el (slime-query-replace-system-and-dependents):
+	Renamed from `slime-query-replace-system-and-dependencies' because
+	that's what it actually does.
+
+2009-12-18  Tobias C. Rittweiler  <tcr@freebits.de>
+
+	Add 'M-x slime-query-replace-system-and-dependencies' which is
+	like `slime-query-replace-system' but also runs query-replace on
+	all files of systems _depending on_ the user-queried system.
+
+	* slime-asdf.el (slime-read-query-replace-args): Factored out from
+	`slime-query-replace-system'.
+	(slime-query-replace-system): Use it.
+	(slime-query-replace-system-and-dependencies): Add.
+
+	* swank-asdf.lisp (who-depends-on):
+	`asdf:system-definition-pathname' may return NIL, guard against
+	that.
+
+2009-12-17  Tobias C. Rittweiler  <tcr@freebits.de>
+
+	* swank-asdf.lisp (who-depends-on): Make defslimefun.
+	(xref-doit [:depends-on]): New method to make :depends-on valid
+	xref request.
+
+	* slime-asdf.el (slime-who-depends-on-rpc): New.
+	(slime-who-depends-on): New interactive function.
+	(slime-asdf-init): Make `slime-edit-uses' perform a :depends-on
+	request, and bind `C-c C-w d' to `slime-who-depends-on'.
+
+2009-12-15  Tobias C. Rittweiler  <tcr@freebits.de>
+
+	* swank-asdf.lisp (who-depends-on): Add.
+
+2009-12-15  Tobias C. Rittweiler  <tcr@freebits.de>
+
+	* swank-asdf.lisp (map-defined-systems): Factored out.
+	(list-all-systems-known-to-asdf): Use it.
+	(asdf-determine-system): Use it, too.
+	(reload-system): Reuse `operate-on-system-for-emacs'.
+
+2009-12-15  Stas Boukarev  <stassats@gmail.com>
+
+	* slime-asdf.el (slime-reload-system): New command for reloading
+	a system without recompiling recursively its dependencies.
+	REPL shortcut for it is `reload-system'.
+
+	* swank-asdf.lisp (reload-system): New function.
+
+2009-12-14  Tobias C. Rittweiler  <tcr@freebits.de>
+
+	Take recursiveness of LABELS into account for displaying local
+	arglists. I.e. make the following work:
+
+         (labels ((iseven (x)
+                    ...)
+                  (isodd (y)
+                    (if (zerop y)
+                       nil
+                      (iseven <>))))) ; Point is here
+	   ...)
+
+	As we only have information to look backward, we cannot show
+	arglist for ISODD within ISEVEN, though.
+
+	* swank-arglists.lisp (extract-local-op-arglists): Handle LABELS
+	specially.
+	(find-subform-with-arglists): Adapted accordingly. Plus: Small
+	refactoring, and fix comparasion of local ops to properly deal
+	with arglist dummies.
+
+2009-12-14  Stas Boukarev  <stassats@gmail.com>
+
+	* slime-asdf.el (slime-delete-system-fasls): New command with a
+	shortcut `delete-system-fasls'.
+
+	* swank-asdf.lisp (delete-system-fasls): New function.
+	(asdf-module-output-files): New function for finding fasls.
+
+2009-12-12  Matthias Koeppe  <mkoeppe@math.ucdavis.edu>
+
+	* slime-presentations.el (slime-reify-old-output): Revert change
+	of 2009-12-11, which introduced spurious quotes in non-evaluated
+	contexts like here:
+
+	  '(1 2 #<STANDARD-CLASS STANDARD-OBJECT> 3 4)
+
+	Presentations do not change standard quoting rules; users just
+	need to remember this.
+
+2009-12-11  Stas Boukarev  <stassats@gmail.com>
+
+	* slime-fuzzy.el (slime-fuzzy-choices-buffer): Don't
+	show cursor in *Fuzzy Completions*.
+	Patch by Tobias C. Rittweiler.
+
+2009-12-11  Stas Boukarev  <stassats@gmail.com>
+
+	* slime-presentations.el (slime-reify-old-output): Quote
+	the CL expession behind presentations, so _(1 2 3)_ (representing a
+	presentation) is not tried to be evaluated.
+	(slime-copy-presentation-to-repl): Use `looking-back' for looking back.
+	Apply De Morgan's law to conditions.
+	Patch by Tobias C. Rittweiler.
+
+2009-12-11  Stas Boukarev  <stassats@gmail.com>
+
+	* swank-asdf.lisp (find-operation): New function for
+	finding asdf operations independent of readtable
+	case sensitivity (read Allegro Modern Mode).
+	(operate-on-system): Accept symbols instead of strings for
+	operation-name, and use the above function.
+
+	* slime-asdf.el: Replace strings with operation names
+	for `slime-oos' with symbols.
+
+2009-12-11  Tobias C. Rittweiler  <tcr@freebits.de>
+
+	* swank-arglists.lisp (*swank-debug-arglists*): Removed.
+	(arglist-for-echo-area): Use DEBUG-ON-SWANK-ERROR instead.
+
 2009-12-04  Stas Boukarev  <stassats@gmail.com>
 
 	* swank-arglists.lisp (find-subform-with-arglist): Return

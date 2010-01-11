@@ -68,6 +68,9 @@ in the directory of the current buffer."
   "Try to determine the asdf system that `filename' belongs to."
   (slime-eval `(swank:asdf-determine-system ,filename ,buffer-package)))
 
+(defun slime-who-depends-on-rpc (system)
+  (slime-eval `(swank:who-depends-on ,system)))
+
 (defun slime-oos (system operation &rest keyword-args)
   "Operate On System."
   (slime-save-some-lisp-buffers)
@@ -76,7 +79,7 @@ in the directory of the current buffer."
            operation (if keyword-args (format " %S" keyword-args) "")
            system)
   (slime-repl-shortcut-eval-async
-   `(swank:operate-on-system-for-emacs ,system ,operation ,@keyword-args)
+   `(swank:operate-on-system-for-emacs ,system ',operation ,@keyword-args)
    #'slime-compilation-finished))
 
 
@@ -88,7 +91,7 @@ in the directory of the current buffer."
 Default system name is taken from first file matching *.asd in current
 buffer's working directory"
   (interactive (list (slime-read-system-name)))
-  (slime-oos system "LOAD-OP"))
+  (slime-oos system 'load-op))
 
 (defun slime-open-system (name &optional load)
   "Open all files in an ASDF system."
@@ -152,19 +155,78 @@ buffer's working directory"
       (interactive)
       (error "This command is only supported on GNU Emacs >23.1.x.")))
 
+(defun slime-read-query-replace-args (format-string &rest format-args)
+  (let* ((minibuffer-setup-hook (slime-minibuffer-setup-hook))
+         (minibuffer-local-map slime-minibuffer-map)
+         (common (query-replace-read-args (apply #'format format-string
+                                                 format-args)
+                                          t t)))
+    (list (nth 0 common) (nth 1 common) (nth 2 common))))
+
 (defun slime-query-replace-system (name from to &optional delimited)
   "Run `query-replace' on an ASDF system."
-  (interactive 
-   (let* ((minibuffer-setup-hook (slime-minibuffer-setup-hook))
-	  (minibuffer-local-map slime-minibuffer-map)
-	  (system (slime-read-system-name nil nil t))
-          (common (query-replace-read-args 
-                   (format "Query replace throughout `%s'" system) t t)))
-     (list system (nth 0 common) (nth 1 common) (nth 2 common))))
-  ;; `tags-query-replace' actually uses `query-replace-regexp'
-  ;; internally.
-  (tags-query-replace (regexp-quote from) to delimited
-		      '(slime-eval `(swank:asdf-system-files ,name))))
+  (interactive (let ((system (slime-read-system-name nil nil t)))
+                 (cons system (slime-read-query-replace-args
+                               "Query replace throughout `%s'" system))))
+  (condition-case c
+      ;; `tags-query-replace' actually uses `query-replace-regexp'
+      ;; internally.
+      (tags-query-replace (regexp-quote from) to delimited
+                          '(slime-eval `(swank:asdf-system-files ,name)))
+    (error
+     ;; Kludge: `tags-query-replace' does not actually return but
+     ;; signals an unnamed error with the below error
+     ;; message. (<=23.1.2, at least.)
+     (unless (string-equal (error-message-string c) "All files processed")
+       (signal (car c) (cdr c)))        ; resignal
+     t)))
+
+(defun slime-query-replace-system-and-dependents
+    (name from to &optional delimited)
+  "Run `query-replace' on an ASDF system and all the systems
+depending on it."
+  (interactive (let ((system (slime-read-system-name nil nil t)))
+                 (cons system (slime-read-query-replace-args
+                               "Query replace throughout `%s'+dependencies"
+                               system))))
+  (slime-query-replace-system name from to delimited)
+  (dolist (dep (slime-who-depends-on-rpc name))
+    (when (y-or-n-p (format "Descend into system `%s'? " dep))
+      (slime-query-replace-system dep from to delimited))))
+
+(defun slime-delete-system-fasls (name)
+  "Delete FASLs produced by compiling a system."
+  (interactive (list (slime-read-system-name)))
+  (slime-repl-shortcut-eval-async
+   `(swank:delete-system-fasls ,name)
+   'message))
+
+(defun slime-reload-system (system)
+  "Reload an ASDF system without reloading its dependencies."
+  (interactive (list (slime-read-system-name)))
+  (slime-save-some-lisp-buffers)
+  (slime-display-output-buffer)
+  (message "Performing ASDF LOAD-OP on system %S" system)
+  (slime-repl-shortcut-eval-async
+   `(swank:reload-system ,system)
+   #'slime-compilation-finished))
+
+(defun slime-who-depends-on (system-name)
+  (interactive (list (slime-read-system-name)))
+  (slime-xref :depends-on system-name))
+
+(defun slime-save-system (system)
+  "Save files belonging to an ASDF system."
+  (interactive (list (slime-read-system-name)))
+  (slime-eval-async
+      `(swank:asdf-system-files ,system)
+    (lambda (files)
+      (dolist (file files)
+        (let ((buffer (get-file-buffer file)))
+          (when buffer
+            (with-current-buffer buffer
+              (save-buffer buffer)))))
+      (message "Done."))))
 
 
 ;;; REPL shortcuts
@@ -172,51 +234,55 @@ buffer's working directory"
 (defslime-repl-shortcut slime-repl-load/force-system ("force-load-system")
   (:handler (lambda ()
               (interactive)
-              (slime-oos (slime-read-system-name) "LOAD-OP" :force t)))
+              (slime-oos (slime-read-system-name) 'load-op :force t)))
   (:one-liner "Recompile and load an ASDF system."))
 
 (defslime-repl-shortcut slime-repl-load-system ("load-system")
   (:handler (lambda ()
               (interactive)
-              (slime-oos (slime-read-system-name) "LOAD-OP")))
+              (slime-oos (slime-read-system-name) 'load-op)))
   (:one-liner "Compile (as needed) and load an ASDF system."))
 
 (defslime-repl-shortcut slime-repl-test/force-system ("force-test-system")
   (:handler (lambda ()
               (interactive)
-              (slime-oos (slime-read-system-name) "TEST-OP" :force t)))
+              (slime-oos (slime-read-system-name) 'test-op :force t)))
   (:one-liner "Compile (as needed) and force test an ASDF system."))
 
 (defslime-repl-shortcut slime-repl-test-system ("test-system")
   (:handler (lambda ()
               (interactive)
-              (slime-oos (slime-read-system-name) "TEST-OP")))
+              (slime-oos (slime-read-system-name) 'test-op)))
   (:one-liner "Compile (as needed) and test an ASDF system."))
 
 (defslime-repl-shortcut slime-repl-compile-system ("compile-system")
   (:handler (lambda ()
               (interactive)
-              (slime-oos (slime-read-system-name) "COMPILE-OP")))
+              (slime-oos (slime-read-system-name) 'compile-op)))
   (:one-liner "Compile (but not load) an ASDF system."))
 
 (defslime-repl-shortcut slime-repl-compile/force-system 
   ("force-compile-system")  
   (:handler (lambda ()
               (interactive)
-              (slime-oos (slime-read-system-name) "COMPILE-OP" :force t)))
+              (slime-oos (slime-read-system-name) 'compile-op :force t)))
   (:one-liner "Recompile (but not load) an ASDF system."))
 
 (defslime-repl-shortcut slime-repl-open-system ("open-system")
-  (:handler (lambda ()
-              (interactive)
-              (call-interactively 'slime-open-system)))
+  (:handler 'slime-open-system)
   (:one-liner "Open all files in an ASDF system."))
 
 (defslime-repl-shortcut slime-repl-browse-system ("browse-system")
-  (:handler (lambda ()
-              (interactive)
-              (call-interactively 'slime-browse-system)))
+  (:handler 'slime-browse-system)
   (:one-liner "Browse files in an ASDF system using Dired."))
+
+(defslime-repl-shortcut slime-repl-delete-system-fasls ("delete-system-fasls")
+  (:handler 'slime-delete-system-fasls)
+  (:one-liner "Delete FASLs of an ASDF system."))
+
+(defslime-repl-shortcut slime-repl-reload-system ("reload-system")
+  (:handler 'slime-reload-system)
+  (:one-liner "Recompile and load an ASDF system."))
 
 
 ;;; Initialization
@@ -225,7 +291,9 @@ buffer's working directory"
   (slime-eval-async '(swank:swank-require :swank-asdf)))
 
 (defun slime-asdf-init ()
-  (add-hook 'slime-connected-hook 'slime-asdf-on-connect))
+  (add-hook 'slime-connected-hook 'slime-asdf-on-connect)
+  (add-to-list 'slime-edit-uses-xrefs :depends-on t)
+  (define-key slime-who-map [?d] 'slime-who-depends-on))
 
 (defun slime-asdf-unload ()
   (remove-hook 'slime-connected-hook 'slime-asdf-on-connect))

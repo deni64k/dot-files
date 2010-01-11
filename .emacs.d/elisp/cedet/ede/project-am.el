@@ -5,7 +5,7 @@
 ;; Author: Eric M. Ludlam <zappo@gnu.org>
 ;; Version: 0.0.3
 ;; Keywords: project, make
-;; RCS: $Id: project-am.el,v 1.49 2009/10/16 19:45:29 zappo Exp $
+;; RCS: $Id: project-am.el,v 1.51 2010/01/07 02:17:02 zappo Exp $
 
 ;; This file is NOT part of GNU Emacs.
 
@@ -32,7 +32,7 @@
 ;; fashion.
 ;;
 ;; project-am uses the structure defined in all good GNU projects with
-;; the Automake file as it's base template, and then maintains that
+;; the Automake file as its base template, and then maintains that
 ;; information during edits, automatically updating the automake file
 ;; where appropriate.
 
@@ -493,7 +493,9 @@ Kill the makefile if it was not loaded before the load."
 	(if kb (setq fb kb)
 	  ;; We need to find-file this thing, but don't use
 	  ;; any semantic features.
-	  (let ((semantic-init-hook nil))
+	  (let ((semantic-init-hook nil)
+		(recentf-exclude '( (lambda (f) t) ))
+		)
 	    (setq fb (find-file-noselect fn)))
 	  )
 	(set-buffer fb)

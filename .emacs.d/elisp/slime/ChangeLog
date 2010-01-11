@@ -1,3 +1,268 @@
+2010-01-06  Tobias C. Rittweiler <tcr@freebits.de>
+
+	* swank-backend (declaration-arglist): Normalize declaration
+	specifiers to contain `variables' rather than `vars'.
+
+2010-01-05  Tobias C. Rittweiler <tcr@freebits.de>
+
+	* swank-sbcl.lisp (compiler-note-location): Add missing return-from.
+
+2010-01-05  Tobias C. Rittweiler <tcr@freebits.de>
+
+	* slime.el (compile-defun [test]): Add two cases.
+
+2010-01-05  Cecil Westerhof  <Cecil@decebal.nl>
+
+	* slime.texi (inferior-slime-mode): Fix thinko.
+
+2010-01-05  Terje Norderhaug  <terje@in-progress.com>
+
+	Provide default implementation for all-threads.
+
+	* swank-backend.lisp (all-threads): Just return ().
+
+2010-01-05  Helmut Eller  <heller@common-lisp.net>
+
+	Fix M-. bug related to CMUCL's multi-file compilation units.
+
+	* swank-cmucl.lisp (code-location-stream-position): Require the
+	"root-number" as argument and subtract it from the TLF number.
+	(location-in-file): Pass the root number along.
+	(code-location-string-offset): Use 0 as root number.
+
+2010-01-05  Helmut Eller  <heller@common-lisp.net>
+
+	Slightly better error message when CMUCL fails to find defstructs.
+
+	* swank-cmucl.lisp (struct-constructor, setf-definitions): Don't
+	use COERCE which gives confusing error message.
+
+2010-01-05  Helmut Eller  <heller@common-lisp.net>
+
+	Add "quit" and "other window prefix" buffer selectors.
+
+	* slime.el (slime-selector-other-window): New variable.
+	(slime-selector): Bind it as need.
+	(def-slime-selector-method): Use the other window if so indicated.
+	([selector] 4): New key binding.
+	([selector] q): New key binding. just abort.
+
+2010-01-05  Helmut Eller  <heller@common-lisp.net>
+
+	Stop the beeping on restart.
+
+	* slime.el (slime-quit-lisp-internal): Don't kill already dead
+	processes.
+
+2010-01-03  Stas Boukarev  <stassats@gmail.com>
+
+	* swank-backend.lisp (frame-call): New function.
+	Returns a string representing a call to the entry point of a frame.
+	* swank-ccl.lisp (frame-call): Implementation of the above.
+	* swank-sbcl.lisp (frame-call): Ditto.
+
+2010-01-03  Tobias C. Rittweiler <tcr@freebits.de>
+
+	* swank.lisp (with-swank-protocol-error-handler): Remove debugging
+	bits.
+
+2010-01-03  Tobias C. Rittweiler <tcr@freebits.de>
+
+	* slime.el (slime-next-read-or-lose): Call `debug' with the error
+	condition, so we can see what actually caused the losage.
+
+2010-01-03  Tobias C. Rittweiler <tcr@freebits.de>
+
+	* slime.el (compile-defun [test]): Also test proper notification
+	after reader-error. Additionally: bind font-lock-verbose to nil to
+	prevent annoying font-lock messages during the test.
+
+	* swank-sbcl.lisp (signal-compiler-condition): Make sure
+	READER-ERROR comes before ERROR in typecase.
+	(swank-compile-file): Remove handling FATAL-COMPILER-HANDLER
+	because a) this handling prevents sbcl from printing the
+	diagnostics to the repl, and b) sbcl itself should handle this and
+	translate it into proper return value for compile-file.
+
+2009-12-23  Tobias C. Rittweiler <tcr@freebits.de>
+
+	* slime.el (complete-symbol [test]): Fix test case.
+
+2009-12-22  Helmut Eller  <heller@common-lisp.net>
+
+	Some new backend functions used for loading image files.
+
+	* swank-backend.lisp (socket-fd, make-fd-stream, dup, exec-image)
+	(command-line-args): New functions.
+	* swank-cmucl.lisp: Impemented.
+	* swank-cmucl.lisp (reset-sigio-handlers): New function.
+	(save-image): Fix quoting bug.
+
+	* swank.lisp (clear-event-history): New functoin.
+	(interactive-eval, eval-region): Don't use FRESH-LINE.
+
+2009-12-21  Tobias C. Rittweiler <tcr@freebits.de>
+
+	* slime.el (slime-at-list-p): Deleted.
+	(slime-at-expression-p): Moved to slime-package-fu.
+	(slime-forward-blanks): Deleted. Use `(skip-chars-forward
+	"[:space:]")' instead.
+	(slime-forward-any-comment): Deleted.
+	(slime-reader-conditionals-regexp): Make a constant so it's
+	inlined.
+	(slime-unknown-feature-expression): Make it an error.
+
+2009-12-19  Stas Boukarev  <stassats@gmail.com>
+
+	* swank-backend.lisp (defpackage): export with-symbol and
+	replace its fully qualified usage everywhere.
+
+2009-12-17  Tobias C. Rittweiler <tcr@freebits.de>
+
+	* slime.el (slime-edit-uses-xrefs): New variable. For contribs to
+	extend.
+	(slime-edit-uses): Use it.
+
+	* swank.lisp (xref-doit): Now a generic functions. For contribs to
+	extend.
+
+2009-12-17  Tobias C. Rittweiler <tcr@freebits.de>
+
+	* swank.lisp (with-top-level-restart): Bind local special.
+	(top-level-restart-p): Check for it; this tells us if we're in
+	the dynamic extent of with-top-level-restart.
+	(handle-requests): Use it.
+
+2009-12-17  Stas Boukarev  <stassats@gmail.com>
+
+	* swank-match.lisp: Fix formatting and style warnings.
+
+2009-12-17  Stas Boukarev  <stassats@gmail.com>
+
+	* swank.lisp (handle-requests): Comment out
+	(assert (boundp '*sldb-quit-restart*)) because it's not bound
+	on NIL communication style. It's not a real fix, but at least it
+	lets null communication-style work.
+
+2009-12-16  Tobias C. Rittweiler <tcr@freebits.de>
+
+	* swank-sbcl.lisp (categorize-definition-source): New.
+	(definition-source-for-emacs): Use it. Slightly
+	refactored. Renamed from `make-definition-source-location'.
+	(find-definitions, find-source-location)
+	(source-location-for-xref-data, function-dspec): Updated
+	accordingly.
+	(source-file-position): Scratch last argument, not needed anymore.
+
+2009-12-16  Stas Boukarev  <stassats@gmail.com>
+
+	* swank.lisp (compile-file-output): Use
+	(make-pathname :directory dir :defaults (compile-file-pathname file))
+	instead of (compile-file-pathname file :output-file dir),
+	because the latter works differently on different implementations.
+	(fasl-pathname): Use the above function.
+
+2009-12-16  Tobias C. Rittweiler <tcr@freebits.de>
+
+	* swank.lisp (*sldb-quit-restart*): Export. For users to customize
+	what `q' does in SLDB.
+	(handle-requests): Test differently for recursive invocations
+	as *sldb-quit-restart* may now be globally bound due to user
+	customization.
+	(coerce-restart): Coerces a restart-designator to a restart.
+	(throw-to-toplevel): Use it.
+
+	* slime.texi (swank:*sldb-quit-restart*): Document it.
+
+2009-12-15  Tobias C. Rittweiler <tcr@freebits.de>
+
+	* swank.lisp (collect-notes): Establish new abort restart ("Abort
+	Compilation"); if an error is signaled in EVAL-WHEN, or during
+	macroexpansion -- assuming the backend DTRT --, invoking this
+	restart will result in the normal compilation failure behaviour,
+	including correct reporting of the offending toplevel form.
+
+	* swank-sbcl.lisp (handle-notification-condition): Use
+	`real-condition' here.
+	(handle-file-compiler-termination): As a result, not needed anymore.
+	(call-with-compilation-hooks): Also signal information about
+	normal errors.
+
+2009-12-14  Stas Boukarev  <stassats@gmail.com>
+
+	* doc/slime.texi (ASDF): Document new commands.
+
+2009-12-12  Matthias Koeppe  <mkoeppe@math.ucdavis.edu>
+
+	* doc/slime.texi (Presentations): Add an example that illustrates
+	quoting necessary with presentations that are lists.
+
+2009-12-11  Stas Boukarev  <stassats@gmail.com>
+
+	* swank-allegro.lisp: Use new function `make-error-location'.
+	(find-fspec-location): Handle errors.
+	Patch by Tobias C. Rittweiler.
+
+2009-12-11  Tobias C. Rittweiler <tcr@freebits.de>
+
+	Add `M-x slime-toggle-debug-on-swank-error'.
+
+	In "Debug on SWANK error" mode, errors which are normally caught
+	to not annoy the user, will now drop into the debugger.
+
+	Additionally, the backend won't do any backtrace magic so you'll
+	see the full backtrace with all its glory details. (SBCL only so
+	far.)
+
+	* slime.el (slime-toggle-debug-on-swank-error): New.
+
+	* swank.lisp (toggle-debug-on-swank-error): New slimefun.
+	(debug-on-swank-error): New function. SETFable.
+	(invoke-default-debugger): Use CALL-WITH-DEBUGGER-HOOK so we're
+	trapped into the native debugger on SBCL (previously we weren't
+	due to SB-EXT:*INVOKE-DEBUGGER-HOOK*.)
+
+	* swank.lisp: Rename SWANK-ERROR to SWANK-PROTOCOL-ERROR.
+
+2009-12-11  Tobias C. Rittweiler <tcr@freebits.de>
+
+	* swank-sbcl.lisp (call-with-debugger-hook): Oops, removed the
+	binding for *DEBUGGER-HOOK*. Fix that.
+	(make-invoke-debugger-hook): Do nothing if hook is NIL.
+
+2009-12-10  Tobias C. Rittweiler <tcr@freebits.de>
+
+	* swank-backend.lisp (*debug-swank-backend*): New variable. If
+	true, backends should not catch internal errors (e.g. during
+	definition finding), and should not perform backtrace magic.
+	(make-error-location): New helper.
+	(find-definitions [interface]): Default to error location.
+
+	* swank-sbcl.lisp (converting-errors-to-location): New helper
+	macro. Regards new *DEBUG-SWANK-BACKEND*.
+	(find-definitions [implementation]): Use it.
+	(find-source-location [implementation]): Ditto.
+	(functiond-spec): Ditto.
+	(frame-source-location [implementation]): Ditto.
+	(*debug-definition-finding*): Removed.
+	(make-source-location-specification): Removed.
+	(safe-function-source-location): Removed.
+	(safe-source-location-for-emacs): Removed. Not needed anymore.
+
+	(call-with-debugging-environment): Do not perform stack hinting
+	depending on *DEBUG-SWANK-BACKEND*.
+
+2009-12-10  Tobias C. Rittweiler <tcr@freebits.de>
+
+	* swank-sbcl.lisp (set-break-hook): New.
+	(call-with-break-hook): New, too. Both extracted from elsewhere.
+	(install-debugger-globally, call-with-debugger-hook): Use them.
+	(make-invoke-debugger-hook): Adapted not to call *debugger-hook*
+	on its own; it should rather decline because *debugger-hook* is
+	tried after *invoke-debugger-hook* anyway. Previously, a
+	custom *debugger-hook* (which declines itself) would have been
+	executed twice.
+
 2009-12-07  Stas Boukarev  <stassats@gmail.com>
 
 	* slime.el (slime-parse-toplevel-form): Use

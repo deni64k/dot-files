@@ -415,12 +415,11 @@ Also return the start position, end position, and buffer of the presentation."
     (unless (eql major-mode 'slime-repl-mode)
       (slime-switch-to-output-buffer))
     (flet ((do-insertion ()
-			 (when (not (string-match "\\s-"
-						  (buffer-substring (1- (point)) (point))))
-			   (insert " "))
-			 (insert presentation-text)
-			 (when (and (not (eolp)) (not (looking-at "\\s-")))
-			   (insert " "))))
+	     (unless (looking-back "\\s-")
+	       (insert " "))
+	     (insert presentation-text)
+	     (unless (or (eolp) (looking-at "\\s-"))
+	       (insert " "))))
       (if (>= (point) slime-repl-prompt-start-mark)
 	  (do-insertion)
 	(save-excursion

@@ -107,7 +107,7 @@
 
 ;;;;; Sockets
 
-(defun socket-fd (socket)
+(defimplementation socket-fd (socket)
   "Return the filedescriptor for the socket represented by SOCKET."
   (etypecase socket
     (fixnum socket)
@@ -137,6 +137,27 @@
                       #+unicode :external-format 
                       #+unicode external-format))
 
+(defimplementation make-fd-stream (fd external-format)
+  (make-socket-io-stream fd :full external-format))
+
+(defimplementation dup (fd)
+  (multiple-value-bind (clone error) (unix:unix-dup fd)
+    (unless clone (error "dup failed: ~a" (unix:get-unix-error-msg error)))
+    clone))
+
+(defimplementation command-line-args ()
+  ext:*command-line-strings*)
+
+(defimplementation exec-image (image-file args)
+  (multiple-value-bind (ok error)
+      (unix:unix-execve (car (command-line-args))
+			(list* (car (command-line-args)) 
+                               "-core" image-file
+                               "-noinit"
+                               args))
+    (error "~a" (unix:get-unix-error-msg error))
+    ok))
+
 ;;;;; Signal-driven I/O
 
 (defimplementation install-sigint-handler (function)
@@ -148,6 +169,10 @@
   "List of (key . function) pairs.
 All functions are called on SIGIO, and the key is used for removing
 specific functions.")
+
+(defun reset-sigio-handlers () (setq *sigio-handlers* '()))
+;; All file handlers are invalid afer reload.
+(pushnew 'reset-sigio-handlers ext:*after-save-initializations*)
 
 (defun set-sigio-handler ()
   (sys:enable-interrupt :sigio (lambda (signal code scp)
@@ -766,11 +791,12 @@ condition object."
 (defun location-in-file (filename code-location debug-source)
   "Resolve the source location for CODE-LOCATION in FILENAME."
   (let* ((code-date (di:debug-source-created debug-source))
+         (root-number (di:debug-source-root-number debug-source))
          (source-code (get-source-code filename code-date)))
     (with-input-from-string (s source-code)
       (make-location (list :file (unix-truename filename))
                      (list :position (1+ (code-location-stream-position
-                                          code-location s)))
+                                          code-location s root-number)))
                      `(:snippet ,(read-snippet s))))))
 
 (defun location-in-stream (code-location debug-source)
@@ -823,14 +849,15 @@ This is true for functions that were compiled directly from buffers."
 
 ;;;;; Groveling source-code for positions
 
-(defun code-location-stream-position (code-location stream)
+(defun code-location-stream-position (code-location stream root)
   "Return the byte offset of CODE-LOCATION in STREAM.  Extract the
 toplevel-form-number and form-number from CODE-LOCATION and use that
 to find the position of the corresponding form.
 
 Finish with STREAM positioned at the start of the code location."
   (let* ((location (debug::maybe-block-start-location code-location))
-	 (tlf-offset (di:code-location-top-level-form-offset location))
+	 (tlf-offset (- (di:code-location-top-level-form-offset location)
+                        root))
 	 (form-number (di:code-location-form-number location)))
     (let ((pos (form-number-stream-position tlf-offset form-number stream)))
       (file-position stream pos)
@@ -852,7 +879,7 @@ FORM-NUMBER is an index into a source-path table for the TLF."
   "Return the byte offset of CODE-LOCATION in STRING.
 See CODE-LOCATION-STREAM-POSITION."
   (with-input-from-string (s string)
-    (code-location-stream-position code-location s)))
+    (code-location-stream-position code-location s 0)))
 
 
 ;;;; Finding definitions
@@ -992,14 +1019,12 @@ NAME can any valid function name (e.g, (setf car))."
 (defun struct-constructor (dd)
   "Return a constructor function from a defstruct definition.
 Signal an error if no constructor can be found."
-  (let ((constructor (or (kernel:dd-default-constructor dd)
-                         (car (kernel::dd-constructors dd)))))
-    (when (or (null constructor)
-              (and (consp constructor) (null (car constructor))))
-      (error "Cannot find structure's constructor: ~S"
-             (kernel::dd-name dd)))
-    (coerce (if (consp constructor) (first constructor) constructor)
-            'function)))
+  (let* ((constructor (or (kernel:dd-default-constructor dd)
+                          (car (kernel::dd-constructors dd))))
+         (sym (if (consp constructor) (car constructor) constructor)))
+    (unless sym
+      (error "Cannot find structure's constructor: ~S" (kernel::dd-name dd)))
+    (coerce sym 'function)))
 
 ;;;;;; Generic functions and methods
 
@@ -1172,15 +1197,15 @@ Signal an error if no constructor can be found."
            (null `(:error ,(format nil "Cannot resolve: ~S" source)))))))))
 
 (defun setf-definitions (name)
-  (let ((function (or (ext:info :setf :inverse name)
-                      (ext:info :setf :expander name)
-                      (and (symbolp name)
-                           (fboundp `(setf ,name))
-                           (fdefinition `(setf ,name))))))
-    (if function
-        (list (list `(setf ,name) 
-                    (function-location (coerce function 'function)))))))
-
+  (let ((f (or (ext:info :setf :inverse name)
+               (ext:info :setf :expander name)
+               (and (symbolp name)
+                    (fboundp `(setf ,name))
+                    (fdefinition `(setf ,name))))))
+    (if f
+        `(((setf ,name) ,(function-location (cond ((functionp  f) f)
+                                                  ((macro-function f))
+                                                  ((fdefinition f)))))))))
 
 (defun variable-location (symbol)
   (multiple-value-bind (location foundp)
@@ -2366,10 +2391,10 @@ The `symbol-value' of each element is a type tag.")
   (multiple-value-bind (pid error) (unix:unix-fork)
     (when (not pid) (error "fork: ~A" (unix:get-unix-error-msg error)))
     (cond ((= pid 0)
-           (let ((args `(,filename 
-                         ,@(if restart-function
-                               `((:init-function ,restart-function))))))
-             (apply #'ext:save-lisp args)))
+           (apply #'ext:save-lisp
+                  filename 
+                  (if restart-function
+                      `(:init-function ,restart-function))))
           (t 
            (let ((status (waitpid pid)))
              (destructuring-bind (&key exited? status &allow-other-keys) status
