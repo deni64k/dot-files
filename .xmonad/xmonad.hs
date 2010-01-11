@@ -20,7 +20,9 @@ import qualified XMonad.Actions.Search as Search
 
 -- XMonad hooks
 import XMonad.Hooks.DynamicLog
+import XMonad.Hooks.EwmhDesktops
 import XMonad.Hooks.ManageDocks
+import XMonad.Hooks.SetWMName
 
 -- XMonad layouts
 import XMonad.Layout.WindowNavigation
@@ -103,7 +105,7 @@ main = do
                   , layoutHook = layoutHook'
                   , manageHook = manageHook'
                   , mouseBindings = mouseBindings'
-                  , startupHook = return () >> checkKeymap defaultConfig (keys' defaultConfig)
+                  , startupHook = return () >> checkKeymap defaultConfig (keys' defaultConfig) >> ewmhDesktopsStartup >> setWMName "LG3D"
                   }
                   `additionalKeys`
                   -- multimedia keys
