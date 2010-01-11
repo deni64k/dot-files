@@ -1,16 +1,14 @@
-;;; lisp.el ---
-;;; Copyright (c) 2010, Denis Sukhonin <d.sukhonin@gmail.com>
+;; Lisp
+(add-to-list 'load-path "~/.emacs.d/elisp/slime")
+(add-to-list 'load-path "~/.emacs.d/elisp/slime/contrib")
 
 (add-hook 'lisp-mode-hook
           (lambda ()
             (setq lisp-indent-offset '+
                   indent-tabs-mode t)
-            (turn-on-eldoc-mode)
             (abbrev-mode 1)
             (set-fill-column 100)
             (auto-fill-mode 1)
-            (set (make-local-variable 'slime-lisp-implementations)
-                 (list (assoc 'sbcl slime-lisp-implementations)))
             (local-set-key (kbd "RET") 'newline-and-indent)))
 
 (when (require-maybe 'info-look)
@@ -22,4 +20,25 @@
 
 (require-maybe 'inf-lisp)
 
-;;; lisp.el ends here
+;; SLIME
+(when (require-maybe 'slime-autoloads)
+  (slime-setup)
+  (add-hook 'lisp-mode-hook (lambda () (slime-mode t)))
+  (add-hook 'inferior-lisp-mode-hook (lambda () (inferior-slime-mode t)))
+  (add-hook 'slime-load-hook (lambda () (require 'slime-autodoc)))
+  (add-hook 'slime-mode-hook (lambda () (slime-autodoc-mode t)))
+
+  (custom-set-variables
+   '(slime-use-autodoc-mode t)
+   '(slime-autodoc-use-multiline-p t)
+   '(slime-autodoc-delay 0.4))
+
+  (eval-after-load "slime"
+    '(progn
+       (slime-setup '(slime-fancy slime-asdf slime-banner slime-fuzzy
+                                  slime-autodoc slime-repl slime-tramp))
+       (setq inferior-lisp-program "sbcl --noinform --no-linedit"
+             slime-complete-symbol*-fancy t
+             slime-complete-symbol-function 'slime-fuzzy-complete-symbol
+             slime-net-coding-system 'utf-8-unix)
+       )))

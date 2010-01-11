@@ -47,4 +47,30 @@
    '(jabeer-autoaway-timeout 5)
    '(jabber-autoaway-status "I'm away")
    '(jabber-autoaway-priority 40))
+
+  ;; (custom-set-faces
+  ;;  '(jabber-roster-user-chatty
+  ;;    ((((class color) (background dark)) (:background "#151515" :height 1.15))
+  ;;     (((class color) (background light)) (:height 1.15))) t)
+  ;;  '(jabber-roster-user-online
+  ;;    ((((class color) (background dark)) (:background "#151515" :height 1.15))
+  ;;     (((class color) (background light)) (:height 1.15))) t)
+  ;;  '(jabber-roster-user-away
+  ;;    ((((class color) (background dark)) (:background "#0a0a0a" :height 1.15))
+  ;;     (((class color) (background light)) (:height 1.15))) t)
+  ;;  '(jabber-roster-user-dnd
+  ;;    ((((class color) (background dark)) (:background "#201515" :height 1.15))
+  ;;     (((class color) (background light)) (:height 1.15))) t)
+  ;;  '(jabber-roster-user-xa
+  ;;    ((((class color)) (:height 0.9))) t)
+  ;;  '(jabber-roster-user-offline
+  ;;    ((((class color)) (:height 0.9))) t)
+  ;;  '(jabber-roster-user-error
+  ;;    ((((class color)) (:height 0.9))) t)
+  ;;  '(jabber-activity-face
+  ;;    ((((class color)) (:foreground "firebrick1"))) t)
+  ;;  '(jabber-activity-personal-face
+  ;;    ((((class color)) (:foreground "DodgerBlue1"))) t)
+  ;;  )
+  ;; )
   )

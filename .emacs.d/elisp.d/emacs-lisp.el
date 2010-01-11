@@ -6,7 +6,6 @@
 
   (setq lisp-indent-offset '+
         indent-tabs-mode t)
-  (turn-on-eldoc-mode)
   (abbrev-mode 1)
   (set-fill-column 100)
   (auto-fill-mode 1)

@@ -1,9 +1,15 @@
 [submodule ".emacs.d/elisp/emms"]
-	path = .emacs.d/elisp/emms
-	url = git://git.sv.gnu.org/emms.git
+        path = .emacs.d/elisp/emms
+        url = git://git.sv.gnu.org/emms.git
+[submodule ".emacs.d/elisp/magit"]
+        path = .emacs.d/elisp/magit
+        url = git://gitorious.org/magit/mainline.git
+[submodule ".emacs.d/elisp/swank-clojure"]
+        path = .emacs.d/elisp/swank-clojure
+        url = git://github.com/jochu/swank-clojure.git
+[submodule ".emacs.d/elisp/clojure-mode"]
+        path = .emacs.d/elisp/clojure-mode
+        url = git://github.com/jochu/clojure-mode.git
 [submodule ".emacs.d/elisp/jabber"]
 	path = .emacs.d/elisp/jabber
-	url = git://catap.ru/emacs-jabber/emacs-jabber.git
-[submodule ".emacs.d/elisp/magit"]
-	path = .emacs.d/elisp/magit
-	url = git://gitorious.org/magit/mainline.git
+	url = git://catap.ru/emacs-jabber/emacs-jabber
