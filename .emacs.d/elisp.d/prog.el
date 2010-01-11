@@ -9,6 +9,8 @@
         c-common-mode
         cmake-mode
         cperl-mode
+        clojure-mode
+        clojure-test-mode
         emacs-lisp-mode
         erlang-mode
         forth-mode

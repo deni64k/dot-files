@@ -1,5 +1,5 @@
 ;;; -*- mode: emacs-lisp; -*-
-;;; Time-stamp: "2009-12-03 23:04:30 (dennis)"
+;;; Time-stamp: "2010-01-08 02:30:30 (dennis)"
 ;;;
 ;;; TODO: сделать некую систему режимов, аля (i-am-at 'home) или (i-am-at 'mfi)
 ;;;       если работа происходит с файлами в ~/work/mfi/projects, то грузить
@@ -237,6 +237,7 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; packages and settings
+(load-file "~/.emacs.d/elisp.d/tramp.el")
 (load-file "~/.emacs.d/elisp.d/cedet.el")
 (load-file "~/.emacs.d/elisp.d/ecb.el")
 (load-file "~/.emacs.d/elisp.d/emms.el")
@@ -251,7 +252,6 @@
 (load-file "~/.emacs.d/elisp.d/org.el")
 (load-file "~/.emacs.d/elisp.d/saveplace.el")
 (load-file "~/.emacs.d/elisp.d/template-file.el")
-(load-file "~/.emacs.d/elisp.d/tramp.el")
 (load-file "~/.emacs.d/elisp.d/twitter.el")
 (load-file "~/.emacs.d/elisp.d/w3m.el")
 (load-file "~/.emacs.d/elisp.d/yasnippet.el")
@@ -283,6 +283,8 @@
 
 (load-file "~/.emacs.d/elisp.d/c-cxx.el")
 (load-file "~/.emacs.d/elisp.d/cmake.el")
+(load-file "~/.emacs.d/elisp.d/clojure.el")
+(load-file "~/.emacs.d/elisp.d/slime.el")
 (load-file "~/.emacs.d/elisp.d/emacs-lisp.el")
 (load-file "~/.emacs.d/elisp.d/erlang.el")
 (load-file "~/.emacs.d/elisp.d/forth.el")
@@ -376,6 +378,4 @@
 
 (custom-set-variables
  '(mouse-yank-at-point t))
-
-(setq debug-on-error nil)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; FIN ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
