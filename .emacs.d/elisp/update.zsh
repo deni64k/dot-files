@@ -16,21 +16,3 @@ done
 # wget http://orgmode.org/org-snapshot.tar.gz
 # tar zxf org-snapshot.tar.gz
 # mv org-snapshot org
-
-# cedet
-(cd cedet && gmake clean-all all)
-
-# ecb
-(cd ecb && gmake CEDET="../cedet")
-
-# w3m
-(cd w3m && ./configure && gmake)
-
-# jabber
-(cd jabber && ./configure && gmake)
-
-# magit
-(cd magit && ./configure && gmake)
-
-# org
-# (cd org && gmake)

@@ -1,39 +1,31 @@
-#!/usr/bin/env zsh
+#!/bin/sh
 
-# update cvs projects
-#for dir in cedet ecb slime w3m; do
-#    (cd $dir; cvs -q up -Pd)
-#done
-
-# update git projects
-#for dir in jabber magit; do
-#    (cd $dir; git pull)
-#done
-
-# update org
-# rm -rf org
-# rm -f org-snapshot.tar.gz*
-# wget http://orgmode.org/org-snapshot.tar.gz
-# tar zxf org-snapshot.tar.gz
-# mv org-snapshot org
+if which gmake >/dev/null 2>&1; then
+    GMAKE=gmake
+elif which make >/dev/null 2>&1; then
+    GMAKE=make
+else
+    echo "Could not found GNU Make."
+    exit 1
+fi
 
 # cedet
-(cd cedet && gmake clean-all all)
+(cd cedet && ${GMAKE} clean-all all)
 
 # ecb
-(cd ecb && gmake CEDET="../cedet" clean ecb)
+(cd ecb && ${GMAKE} CEDET="../cedet" clean ecb)
 
 # w3m
-(cd w3m && ./configure && gmake clean all)
+(cd w3m && ./configure && ${GMAKE} clean all)
 
 # jabber
-(cd jabber && ./configure && gmake clean all)
+(cd jabber && ./configure && ${GMAKE} clean all)
 
 # magit
-(cd magit && ./configure && gmake clean all)
+(cd magit && ./configure && ${GMAKE} clean all)
 
 # emms
-(cd emms && gmake clean all)
+(cd emms && ${GMAKE} clean all)
 
 # org
 # (cd org && gmake)
