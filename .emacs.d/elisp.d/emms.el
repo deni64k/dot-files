@@ -8,7 +8,9 @@
 (require 'emms-setup)
 (emms-devel)
 
-(require 'emms-player-simple)
+(require 'emms-mode-line)
+(setq emms-mode-line-titlebar-function 'emms-mode-line-playlist-current)
+
 (require 'emms-source-file)
 (require 'emms-source-playlist)
 
@@ -31,6 +33,9 @@
 
 (require 'emms-browser)
 (global-set-key (kbd "<f2>") 'emms-smart-browse)
+(setq emms-browser-info-title-format "%i%T %a - %A - %t"
+      emms-browser-info-album-format "%i%T %a - %A - %t")
+(setq emms-browser-playlist-info-title-format emms-browser-info-title-format)
 
 (global-set-key (kbd "C-c e w") 'emms-show)
 (global-set-key (kbd "C-c e n") 'emms-next)
