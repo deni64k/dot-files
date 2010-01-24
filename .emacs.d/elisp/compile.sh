@@ -16,7 +16,7 @@ fi
 (cd w3m && ./configure && ${GMAKE} clean all)
 
 # jabber
-(cd jabber && ./configure && ${GMAKE} clean all)
+(cd jabber && autoreconf -i && ./configure && ${GMAKE} clean all)
 
 # magit
 (cd magit && ./configure && ${GMAKE} clean all)
