@@ -464,6 +464,13 @@ joined together."))
   "SLIME Read-Eval-Print-Loop."
   (slime-output-buffer))
 
+(define-minor-mode slime-repl-map-mode
+  "Minor mode which makes slime-repl-mode-map available.
+\\{slime-repl-mode-map}"
+  nil
+  nil
+  slime-repl-mode-map)
+
 (defun slime-repl-mode () 
   "Major mode for interacting with a superior Lisp.
 \\{slime-repl-mode-map}"
@@ -471,6 +478,8 @@ joined together."))
   (kill-all-local-variables)
   (setq major-mode 'slime-repl-mode)
   (use-local-map slime-repl-mode-map)
+  (slime-editing-mode 1)
+  (slime-repl-map-mode 1)
   (lisp-mode-variables t)
   (set (make-local-variable 'lisp-indent-function)
        'common-lisp-indent-function)
@@ -492,7 +501,6 @@ joined together."))
        'slime-repl-mode-beginning-of-defun)
   (set (make-local-variable 'end-of-defun-function) 
        'slime-repl-mode-end-of-defun)
-  (slime-editing-mode 1)
   (slime-run-mode-hooks 'slime-repl-mode-hook))
 
 (defun slime-repl-buffer (&optional create connection)

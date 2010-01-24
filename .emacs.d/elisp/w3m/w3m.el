@@ -1,7 +1,7 @@
 ;;; w3m.el --- an Emacs interface to w3m -*- coding: iso-2022-7bit; -*-
 
-;; Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
-;; TSUCHIYA Masatoshi <tsuchiya@namazu.org>
+;; Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
+;; 2010 TSUCHIYA Masatoshi <tsuchiya@namazu.org>
 
 ;; Authors: TSUCHIYA Masatoshi <tsuchiya@namazu.org>,
 ;;          Shun-ichi GOTO     <gotoh@taiyo.co.jp>,
@@ -169,12 +169,14 @@
 (eval-when-compile
   (autoload 'doc-view-mode "doc-view" nil t)
   (autoload 'doc-view-mode-p "doc-view")
+  (autoload 'quit-window "window" nil t)
   (autoload 'rfc2368-parse-mailto-url "rfc2368")
   (autoload 'widget-convert-button "wid-edit")
   (autoload 'widget-forward "wid-edit" nil t)
   (autoload 'widget-get "wid-edit")
   (unless (fboundp 'char-to-int)
     (defalias 'char-to-int 'identity))
+  (defvar doc-view-mode-map)
   (defvar w3m-bookmark-mode)
   (defvar w3m-bookmark-menu-items)
   (defvar w3m-bookmark-menu-items-pre)
@@ -184,7 +186,7 @@
 
 (defconst emacs-w3m-version
   (eval-when-compile
-    (let ((rev "$Revision: 1.1457 $"))
+    (let ((rev "$Revision: 1.1464 $"))
       (and (string-match "\\.\\([0-9]+\\) \\$\\'" rev)
 	   (setq rev (- (string-to-number (match-string 1 rev)) 1136))
 	   (format "1.4.%d" (+ rev 50)))))
@@ -260,10 +262,8 @@ The valid values include `w3m', `w3mmee', and `w3m-m17n'.")
 		   (t 'other))))
 	  (when (re-search-forward "options +" nil t)
 	    (setq w3m-compile-options
-		  (or (split-string (buffer-substring
-				     (match-end 0)
-				     (save-excursion (end-of-line)
-						     (point)))
+		  (or (split-string (buffer-substring (match-end 0)
+						      (point-at-eol))
 				    ",")
 		      (list nil)))
 	    (when (member "m17n" w3m-compile-options)
@@ -626,7 +626,7 @@ nil which provides Lynx-like keys."
 					w3m-lynx-like-map)
 			 w3m-minor-mode-map (w3m-make-minor-mode-keymap))))
 	     (let ((buffers (buffer-list)))
-	       (save-excursion
+	       (save-current-buffer
 		 (while buffers
 		   (set-buffer (car buffers))
 		   (if (eq major-mode 'w3m-mode)
@@ -2732,6 +2732,9 @@ db-history\\|antenna\\|namazu\\|dtree\\)/.*\\)?\\'\
 
 (defvar w3m-mode-map nil "Keymap for emacs-w3m buffers.")
 (defvar w3m-link-map nil "Keymap used on links.")
+(defvar w3m-doc-view-map nil
+  "Keymap used in `doc-view-mode' that emacs-w3m launches.
+`doc-view-mode-map' gets to be its parent keymap.")
 
 (defvar w3m-mode-setup-functions nil
   "Hook functions run after setting up the `w3m-mode'.")
@@ -4283,8 +4286,7 @@ If optional KEEP-PROPERTIES is non-nil, text property is reserved."
   "Refontify anchors as they have already arrived.
 It replaces the faces on the arrived anchors from `w3m-anchor' to
 `w3m-arrived-anchor'."
-  (save-excursion
-    (and buff (set-buffer buff))
+  (with-current-buffer (or buff (current-buffer))
     (let (prop)
       (when (and (eq major-mode 'w3m-mode)
 		 (get-text-property (point) 'w3m-anchor-sequence)
@@ -4558,8 +4560,7 @@ if it has no scheme part."
   "Initialize the variables for managing the cache."
   (unless (and (bufferp w3m-cache-buffer)
 	       (buffer-live-p w3m-cache-buffer))
-    (save-excursion
-      (set-buffer (w3m-get-buffer-create " *w3m cache*"))
+    (with-current-buffer (w3m-get-buffer-create " *w3m cache*")
       (buffer-disable-undo)
       (set-buffer-multibyte nil)
       (setq buffer-read-only t
@@ -4605,8 +4606,7 @@ already been the data corresponding to URL in the cache."
 	 (symbol-value ident))))
 
 (defun w3m-cache-remove-oldest ()
-  (save-excursion
-    (set-buffer w3m-cache-buffer)
+  (with-current-buffer w3m-cache-buffer
     (goto-char (point-min))
     (unless (zerop (buffer-size))
       (let ((ident (get-text-property (point) 'w3m-cache))
@@ -4626,8 +4626,7 @@ already been the data corresponding to URL in the cache."
 	beg end)
     (when (memq ident w3m-cache-articles)
       ;; It was in the cache.
-      (save-excursion
-	(set-buffer w3m-cache-buffer)
+      (with-current-buffer w3m-cache-buffer
 	(let (buffer-read-only)
 	  (when (setq beg (text-property-any
 			   (point-min) (point-max) 'w3m-cache ident))
@@ -4649,8 +4648,7 @@ identifies the data in the cache."
 	 (>= (length w3m-cache-articles) w3m-keep-cache-size)
 	 (w3m-cache-remove-oldest))
     ;; Insert the new article.
-    (save-excursion
-      (set-buffer w3m-cache-buffer)
+    (with-current-buffer w3m-cache-buffer
       (let (buffer-read-only)
 	(goto-char (point-max))
 	(let ((b (point)))
@@ -4670,8 +4668,7 @@ BUFFER is nil, all contents will be inserted in the current buffer."
     (when (memq ident w3m-cache-articles)
       ;; It was in the cache.
       (let (beg end)
-	(save-excursion
-	  (set-buffer w3m-cache-buffer)
+	(with-current-buffer w3m-cache-buffer
 	  (if (setq beg (text-property-any
 			 (point-min) (point-max) 'w3m-cache ident))
 	      ;; Find the end (i.e., the beginning of the next article).
@@ -4681,9 +4678,7 @@ BUFFER is nil, all contents will be inserted in the current buffer."
 	    (setq w3m-cache-articles (delq ident w3m-cache-articles))))
 	(and beg
 	     end
-	     (save-excursion
-	       (when buffer
-		 (set-buffer buffer))
+	     (with-current-buffer (or buffer (current-buffer))
 	       (let (buffer-read-only)
 		 (insert-buffer-substring w3m-cache-buffer beg end))
 	       t))))))
@@ -6631,7 +6626,9 @@ compatibility which is described in Section 5.2 of RFC 2396.")
 
 (defun w3m-view-this-url-1 (url reload new-session)
   (lexical-let ((url url)
-		pos buffer newbuffer wconfig)
+		(obuffer (current-buffer))
+		(wconfig (current-window-configuration))
+		pos buffer)
     (if new-session
 	(let ((empty
 	       ;; If a new url has the #name portion, we simply copy
@@ -6653,37 +6650,34 @@ compatibility which is described in Section 5.2 of RFC 2396.")
       (setq buffer (current-buffer)))
     (let (handler)
       (w3m-process-do
-	  (success
-	   (save-window-excursion
-	     (prog1
-		 (w3m-goto-url url reload nil nil w3m-current-url handler)
-	       (setq newbuffer (current-buffer)
-		     wconfig (current-window-configuration)))))
-	;; When the buffer's major mode has changed from the w3m-mode
-	;; to another by visiting the new url (possibly a local file,
-	;; a mailto url, etc.), we need to make the new buffer visible.
-	(when (and (eq (with-current-buffer buffer major-mode)
-		       'w3m-mode)
-		   (not (eq (with-current-buffer newbuffer major-mode)
-			    'w3m-mode)))
-	  ;; Empty buffer must delete before restore window configuration.
-	  (when pos
-	    (w3m-delete-buffer-if-empty buffer))
-	  (set-window-configuration wconfig))
-	;; The new session is created.
-	(when pos
-	  ;; Already empty buffer killed if the new url is not the w3m-mode.
-	  (when (buffer-name buffer)
-	    (w3m-delete-buffer-if-empty buffer))
+	  (success (w3m-goto-url url reload nil nil w3m-current-url handler))
+	;; Delete the newly created buffer if it's been made empty.
+	(when (and pos
+		   (buffer-name buffer))
+	  (w3m-delete-buffer-if-empty buffer))
+	(when pos ;; the new session is created.
 	  ;; FIXME: what we should actually do is to modify the `w3m-goto-url'
 	  ;; function so that it may return a proper value, and checking it.
 	  (when (and (marker-buffer pos) (buffer-name (marker-buffer pos)))
-	    (save-excursion
-	      (set-buffer (marker-buffer pos))
+	    (with-current-buffer (marker-buffer pos)
 	      (save-excursion
 		(goto-char pos)
 		(w3m-refontify-anchor)))))
-	(w3m-recenter)))))
+	;; We need to restore the window configuration to the former
+	;; one if `w3m-new-session-in-background' is non-nil unless
+	;; the buffer's major mode has changed from the w3m-mode to
+	;; another by visiting the new url (possibly a local file,
+	;; a mailto url, doc-view-mode, etc.).
+	(if (and w3m-new-session-in-background
+		 (not (eq obuffer (current-buffer)))
+		 (or (buffer-name buffer)
+		     ;; Clear "...has been retrieved in..." message.
+		     (progn (w3m-message "") nil))
+		 (or (eq major-mode 'w3m-mode)
+		     (not (eq (with-current-buffer buffer major-mode)
+			      'w3m-mode))))
+	    (set-window-configuration wconfig)
+	  (w3m-recenter))))))
 
 (defun w3m-view-this-url (&optional arg new-session)
   "Display the page pointed to by the link under point.
@@ -6938,8 +6932,7 @@ of the url currently displayed.  The browser is defined in
 	      (success (w3m-download url nil nil handler))
 	    (and success
 		 (buffer-name (marker-buffer pos))
-		 (save-excursion
-		   (set-buffer (marker-buffer pos))
+		 (with-current-buffer (marker-buffer pos)
 		   (when (equal curl w3m-current-url)
 		     (goto-char pos)
 		     (w3m-refontify-anchor))))))))
@@ -6964,15 +6957,15 @@ of the url currently displayed.  The browser is defined in
 	(url (if interactive-p
 		 (or (w3m-anchor) (w3m-image))
 	       (or (w3m-anchor (point)) (w3m-image (point)))))
-	(alt (or (if interactive-p
-		     (w3m-image-alt)
-		   (w3m-image-alt (point))))))
+	(alt (if interactive-p
+		 (w3m-image-alt)
+	       (w3m-image-alt (point)))))
     (when (or url interactive-p)
       (and url interactive-p (kill-new url))
       (w3m-message "%s%s"
-		   (if alt
-		       (format "%s: " alt)
-		     "")
+		   (if (zerop (length alt))
+		       ""
+		     (concat alt ": "))
 		   (or (w3m-url-readable-string url)
 		       (and (w3m-action) "There is a form")
 		       "There is no url")))))
@@ -6986,8 +6979,7 @@ of the url currently displayed.  The browser is defined in
 (defun w3m-highlight-current-anchor-1 (seq)
   "Highlight an anchor in the line if the anchor sequence is the same as SEQ.
 Return t if highlighting is successful."
-  (let ((limit (save-excursion (end-of-line)
-			       (point)))
+  (let ((limit (point-at-eol))
 	ov beg pos pseq)
     (save-excursion
       (beginning-of-line)
@@ -7089,8 +7081,7 @@ Return t if highlighting is successful."
       (setcdr w3m-goto-anchor-hist nil)))
   (if (< arg 0)
       (w3m-previous-anchor (- arg))
-    (let ((st (point))
-	  pos)
+    (let (pos)
       (while (> arg 0)
 	(unless (w3m-goto-next-anchor)
 	  (setq w3m-goto-anchor-hist nil)
@@ -7140,8 +7131,7 @@ Return t if highlighting is successful."
       (setcdr w3m-goto-anchor-hist nil)))
   (if (< arg 0)
       (w3m-next-anchor (- arg))
-    (let ((st (point))
-	  pos)
+    (let (pos)
       (while (> arg 0)
 	(unless (w3m-goto-previous-anchor)
 	  (setq w3m-goto-anchor-hist nil)
@@ -7183,17 +7173,16 @@ Return t if highlighting is successful."
       (setcdr w3m-goto-anchor-hist nil)))
   (if (< arg 0)
       (w3m-previous-form (- arg))
-    (let ((st (point)))
-      (while (> arg 0)
-	(unless (w3m-goto-next-form)
-	  ;; Make a search from the beginning of the buffer.
-	  (setq w3m-goto-anchor-hist nil)
-	  (goto-char (point-min))
-	  (w3m-goto-next-form))
-	(setq arg (1- arg))
-	(if (member (w3m-action (point)) w3m-goto-anchor-hist)
-	    (setq arg (1+ arg))
-	  (push (w3m-action (point)) w3m-goto-anchor-hist))))
+    (while (> arg 0)
+      (unless (w3m-goto-next-form)
+	;; Make a search from the beginning of the buffer.
+	(setq w3m-goto-anchor-hist nil)
+	(goto-char (point-min))
+	(w3m-goto-next-form))
+      (setq arg (1- arg))
+      (if (member (w3m-action (point)) w3m-goto-anchor-hist)
+	  (setq arg (1+ arg))
+	(push (w3m-action (point)) w3m-goto-anchor-hist)))
     (w3m-horizontal-on-screen)
     (w3m-print-this-url)))
 
@@ -7222,17 +7211,16 @@ Return t if highlighting is successful."
       (setcdr w3m-goto-anchor-hist nil)))
   (if (< arg 0)
       (w3m-next-form (- arg))
-    (let ((st (point)))
-      (while (> arg 0)
-	(unless (w3m-goto-previous-form)
-	  ;; search from the end of the buffer
-	  (setq w3m-goto-anchor-hist nil)
-	  (goto-char (point-max))
-	  (w3m-goto-previous-form))
-	(setq arg (1- arg))
-	(if (member (w3m-action (point)) w3m-goto-anchor-hist)
-	    (setq arg (1+ arg))
-	  (push (w3m-action (point)) w3m-goto-anchor-hist))))
+    (while (> arg 0)
+      (unless (w3m-goto-previous-form)
+	;; search from the end of the buffer
+	(setq w3m-goto-anchor-hist nil)
+	(goto-char (point-max))
+	(w3m-goto-previous-form))
+      (setq arg (1- arg))
+      (if (member (w3m-action (point)) w3m-goto-anchor-hist)
+	  (setq arg (1+ arg))
+	(push (w3m-action (point)) w3m-goto-anchor-hist)))
     (w3m-horizontal-on-screen)
     (w3m-print-this-url)))
 
@@ -7261,17 +7249,16 @@ Return t if highlighting is successful."
       (setcdr w3m-goto-anchor-hist nil)))
   (if (< arg 0)
       (w3m-previous-image (- arg))
-    (let ((st (point)))
-      (while (> arg 0)
-	(unless (w3m-goto-next-image)
-	  ;; Make a search for an image from the beginning of the buffer.
-	  (setq w3m-goto-anchor-hist nil)
-	  (goto-char (point-min))
-	  (w3m-goto-next-image))
-	(setq arg (1- arg))
-	(if (member (w3m-image (point)) w3m-goto-anchor-hist)
-	    (setq arg (1+ arg))
-	  (push (w3m-image (point)) w3m-goto-anchor-hist))))
+    (while (> arg 0)
+      (unless (w3m-goto-next-image)
+	;; Make a search for an image from the beginning of the buffer.
+	(setq w3m-goto-anchor-hist nil)
+	(goto-char (point-min))
+	(w3m-goto-next-image))
+      (setq arg (1- arg))
+      (if (member (w3m-image (point)) w3m-goto-anchor-hist)
+	  (setq arg (1+ arg))
+	(push (w3m-image (point)) w3m-goto-anchor-hist)))
     (w3m-horizontal-on-screen)
     (w3m-print-this-url)))
 
@@ -7300,17 +7287,16 @@ Return t if highlighting is successful."
       (setcdr w3m-goto-anchor-hist nil)))
   (if (< arg 0)
       (w3m-next-image (- arg))
-    (let ((st (point)))
-      (while (> arg 0)
-	(unless (w3m-goto-previous-image)
-	  ;; Make a search from the end of the buffer.
-	  (setq w3m-goto-anchor-hist nil)
-	  (goto-char (point-max))
-	  (w3m-goto-previous-image))
-	(setq arg (1- arg))
-	(if (member (w3m-image (point)) w3m-goto-anchor-hist)
-	    (setq arg (1+ arg))
-	  (push (w3m-image (point)) w3m-goto-anchor-hist))))
+    (while (> arg 0)
+      (unless (w3m-goto-previous-image)
+	;; Make a search from the end of the buffer.
+	(setq w3m-goto-anchor-hist nil)
+	(goto-char (point-max))
+	(w3m-goto-previous-image))
+      (setq arg (1- arg))
+      (if (member (w3m-image (point)) w3m-goto-anchor-hist)
+	  (setq arg (1+ arg))
+	(push (w3m-image (point)) w3m-goto-anchor-hist)))
     (w3m-horizontal-on-screen)
     (w3m-print-this-url)))
 
@@ -7392,12 +7378,14 @@ a page in a new buffer with the correct width."
   (interactive "p")
   (unless arg (setq arg 1))
   (when (and (/= arg 0) (eq major-mode 'w3m-mode))
+    (w3m-history-store-position)
     (let* ((buffers (w3m-list-buffers))
 	   (len (length buffers)))
       (switch-to-buffer
        (nth (mod (+ arg (- len (length (memq (current-buffer) buffers))))
 		 len)
 	    buffers)))
+    (w3m-history-restore-position)
     (run-hooks 'w3m-select-buffer-hook)
     (w3m-select-buffer-update)))
 
@@ -7902,6 +7890,7 @@ This command closes all emacs-w3m windows, but all the emacs-w3m
 buffers remain.  Frames created for emacs-w3m sessions will also be
 closed.  See also `w3m-quit'."
   (interactive)
+  (w3m-history-store-position)
   ;; `w3m-list-buffers' won't return all the emacs-w3m buffers if
   ;; `w3m-fb-mode' is turned on.
   (let* ((buffers (w3m-list-buffers t))
@@ -8701,6 +8690,10 @@ this function will prompt user for it."
 	(copy-file ftp filename)
 	(message "Wrote %s" filename)))))
 
+(unless w3m-doc-view-map
+  (setq w3m-doc-view-map (make-sparse-keymap))
+  (define-key w3m-doc-view-map "q" 'w3m-doc-view-quit))
+
 (defun w3m-doc-view (url)
   "View PDF/PostScript/DVI files using `doc-view-mode'.
 `w3m-pop-up-windows' and `w3m-pop-up-frames' control how the document
@@ -8732,7 +8725,27 @@ window turns up."
       (set-buffer-modified-p nil)
       (setq buffer-file-name url)
       (doc-view-mode)
+      (use-local-map w3m-doc-view-map)
+      (set-keymap-parent w3m-doc-view-map doc-view-mode-map)
       'internal-view)))
+
+(defun w3m-doc-view-quit (&optional kill)
+  "Quit the `doc-view-mode' window that emacs-w3m launches.
+With the prefix argument KILL, kill the buffer."
+  (interactive "P")
+  (cond (w3m-pop-up-frames
+	 (when (prog1 (one-window-p t) (quit-window kill))
+	   (delete-frame (selected-frame))))
+	(w3m-pop-up-windows
+	 (if (fboundp 'quit-window)
+	     (quit-window kill)
+	   (if kill
+	       (progn
+		 (set-buffer-modified-p nil)
+		 (kill-buffer (current-buffer)))
+	     (bury-buffer)))
+	 (unless (eq (next-window nil 'no-mini) (selected-window))
+	   (delete-window)))))
 
 (eval-and-compile
   (unless (fboundp 'w3m-add-local-hook)
@@ -8985,9 +8998,9 @@ Cannot run two w3m processes simultaneously \
 	      (type (prog1
 			(w3m-goto-url (car urls))
 		      (dolist (url (cdr urls))
-			(save-excursion
-			  (set-buffer (w3m-copy-buffer nil nil nil 'empty))
-			  (save-window-excursion
+			(save-window-excursion
+			  (with-current-buffer (w3m-copy-buffer nil nil nil
+								'empty)
 			    (w3m-goto-url url))))))
 	    type))
       ;; Retrieve the page.

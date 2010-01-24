@@ -1,3 +1,74 @@
+2010-01-19  Katsumi Yamaoka  <yamaoka@jpl.org>
+
+	* w3m.el (w3m-next-anchor, w3m-previous-anchor, w3m-next-form)
+	(w3m-previous-form, w3m-next-image, w3m-previous-image): Remove unused
+	var `st'.
+
+2010-01-19  Katsumi Yamaoka  <yamaoka@jpl.org>
+
+	* w3m.el (w3m-goto-url): Make it work as before for group: urls.
+
+2010-01-15  Katsumi Yamaoka  <yamaoka@jpl.org>
+
+	* w3m.el (w3m-doc-view-map): New variable.
+	(w3m-view-this-url-1): Improve the way to keep the window configuration
+	for the case where w3m-new-session-in-background is non-nil.
+	(w3m-doc-view): Use w3m-doc-view-map.
+	(w3m-doc-view-quit): New function.
+
+2010-01-13  Katsumi Yamaoka  <yamaoka@jpl.org>
+
+	* w3m-bug.el (report-emacs-w3m-bug)
+	* w3m-session.el (w3m-session-save, w3m-session-automatic-save)
+	(w3m-session-deleted-save, w3m-session-crash-recovery-save)
+	* w3m.el (w3m-key-binding): Use save-current-buffer instead of
+	save-excursion.
+
+	* mew-w3m.el (mew-w3m-view-inline-image, mew-mime-text/html-w3m)
+	* w3m-xmas.el (w3m-window-hscroll)
+	* w3mhack.el (toplevel, w3mhack-generate-load-file): Use
+	with-current-buffer rather than save-excursion + set-buffer.
+
+	* w3m-cookie.el (w3m-cookie-parse-args): Use with-current-buffer rather
+	than save-excursion + set-buffer; no need to use save-restriction and
+	narrow-to-region; remove duplicate set-syntax-table.
+
+2010-01-12  Katsumi Yamaoka  <yamaoka@jpl.org>
+
+	* w3m.el (w3m-print-this-url): Exclude empty image-alt string.
+
+	* w3m-form.el (w3m-form-parse-and-fontify): Strip text props from
+	string elements contained in w3m-current-forms so as to enable XEmacs
+	to read ~/.w3m/.sessions file.
+
+2010-01-12  Katsumi Yamaoka  <yamaoka@jpl.org>
+
+	* w3m.el (w3m-refontify-anchor, w3m-cache-setup)
+	(w3m-cache-remove-oldest, w3m-cache-remove, w3m-cache-contents)
+	(w3m-cache-request-contents, w3m-view-this-url-1)
+	(w3m-download-this-url, w3m-goto-url)
+	* w3m-session.el (w3m-session-save)
+	* w3m-bookmark.el (w3m-bookmark-sections, w3m-bookmark-write-file)
+	(w3m-bookmark-kill-entries, w3m-bookmark-undo, w3m-bookmark-iterator)
+	* w3m-util.el (w3m-unseen-buffer-p): Use with-current-buffer rather
+	than save-excursion + set-buffer.
+
+	* w3m.el (toplevel, w3m-highlight-current-anchor-1): Use point-at-eol
+	rather than `(save-excursion (end-of-line) (point))'.
+
+	* w3m-util.el: Autoload w3m-history-restore-position when compiling;
+	autoload w3m-fb-frame-parameter only when compiling.
+
+2010-01-12  Katsumi Yamaoka  <yamaoka@jpl.org>
+
+	* w3m.el (w3m-next-buffer): Save and restore positions.
+	(w3m-close-window): Save positions.
+
+	* w3m-hist.el (w3m-history-store-position)
+	(w3m-history-restore-position): Save and restore hscroll.
+
+	* w3m-util.el (w3m-popup-buffer): Restore positions.
+
 2009-11-06  TSUCHIYA Masatoshi  <tsuchiya@namazu.org>
 
 	* w3m-antenna.el (w3m-antenna-check-rss): Ignore future entries to

@@ -1,3 +1,32 @@
+2010-01-19  Stas Boukarev  <stassats@gmail.com>
+
+	* swank-rpc.lisp (:swank-rpc): (:use :cl), SBCL
+	doesn't use it by default.
+
+2010-01-19  Terje Norderhaug  <terje@in-progress.com>
+
+	* Refactorized parts of slime.lisp into a new swank-rpc module. 
+	
+2010-01-14  Stas Boukarev  <stassats@gmail.com>
+
+	* doc/slime.texi (Setting up the lisp image):
+	(swank-loader:init) is also needed for loading swank.
+	Reported by Evgeny Bahvalov.
+
+2010-01-13  Tobias C. Rittweiler <tcr@freebits.de>
+
+	* swank.lisp (*swank-state-stack*): Delete. Not needed anymore.
+	(defslimefun state-stack): Delete.
+	(decode-message): Adapted.
+	(debug-in-emacs): Adapted.
+
+2010-01-11  Mark Evenson  <evenson@dada.local>
+
+	* swank-abcl.lisp (emacs-inspect): Implementation for Java
+	objects.
+
+	Fix compiler warning about *ABCL-SIGNALED-CONDITIONS*.
+
 2010-01-06  Tobias C. Rittweiler <tcr@freebits.de>
 
 	* swank-backend (declaration-arglist): Normalize declaration
