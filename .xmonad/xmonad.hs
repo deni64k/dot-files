@@ -122,23 +122,23 @@ main = do
 
 -- misc -----------------------------------------------------------------------
 
-workspaces' :: [WorkspaceId]
-workspaces' = ["one", "two", "three", "mail", "www", "p2p", "chat", "music", "xconsole"]
-
-modMask' :: KeyMask
 --
 -- mod1Mask = alt
 -- mod4Mask = windows key
 -- mod5Mask = hyper key
 --
+modMask' :: KeyMask
 modMask' = mod4Mask
 
+workspaces' :: [WorkspaceId]
+workspaces' = ["one", "two", "three", "four", "five", "net", "fun", "listen", "console"]
+
 borderWidth' :: Dimension
-borderWidth' = 1
+borderWidth' = 2
 
 normalBorderColor', focusedBorderColor' :: String
 normalBorderColor'  = backgroundColor
-focusedBorderColor' = "#adff2f"
+focusedBorderColor' = colorDodgerBlue -- "#adff2f"
 
 terminal' :: String
 terminal' = "xterm"
@@ -289,20 +289,23 @@ manageHook' = composeAll
   [ className =? "MPlayer"        --> doFloat
   , className =? "Gimp"           --> doFloat
   , className =? "Gajim.py"       --> doFloat
+  , className =? "Downbar"        --> doFloat
+  , className =? "Extension"      --> doFloat
   --, className =? "Firefox"        --> doFloat
   , appName   =? "Download"       --> doFloat
   , appName   =? "Dialog"         --> doFloat
   , appName   =? "xmessage"       --> doFloat
+  , appName   =? "QEMU"           --> doFloat
 
   -- bind windows to workspaces
-  , className =? "Thunderbird"    --> doF (W.shift "mail")
-  , className =? "Icedove"        --> doF (W.shift "mail")
-  , className =? "Firefox"        --> doF (W.shift "www")
-  , className =? "Iceweasel"      --> doF (W.shift "www")
-  , className =? "Gajim.py"       --> doF (W.shift "chat")
-  , className =? "Sonata"         --> doF (W.shift "music")
-  , className =? "xconsole"       --> doF (W.shift "xconsole")
-  , className =? "XConsole"       --> doF (W.shift "xconsole")
+  , className =? "Thunderbird"    --> doF (W.shift "net")
+  , className =? "Icedove"        --> doF (W.shift "net")
+  , className =? "Firefox"        --> doF (W.shift "net")
+  , className =? "Iceweasel"      --> doF (W.shift "net")
+  , className =? "Gajim.py"       --> doF (W.shift "fun")
+  , className =? "Sonata"         --> doF (W.shift "listen")
+  , className =? "xconsole"       --> doF (W.shift "console")
+  , className =? "XConsole"       --> doF (W.shift "console")
 
   , className =? "stalonetray"    --> doIgnore
   , className =? "trayer"         --> doIgnore
