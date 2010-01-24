@@ -1,4 +1,4 @@
-#!/usr/bin/env zsh
+#!/bin/sh
 
 # update cvs projects
 for dir in cedet ecb slime w3m; do
@@ -6,13 +6,6 @@ for dir in cedet ecb slime w3m; do
 done
 
 # update git projects
-for dir in jabber magit; do
+for dir in jabber magit undo-tree; do
     (cd $dir; git pull)
 done
-
-# update org
-# rm -rf org
-# rm -f org-snapshot.tar.gz*
-# wget http://orgmode.org/org-snapshot.tar.gz
-# tar zxf org-snapshot.tar.gz
-# mv org-snapshot org

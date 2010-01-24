@@ -2,11 +2,8 @@
 
 if which gmake >/dev/null 2>&1; then
     GMAKE=gmake
-elif which make >/dev/null 2>&1; then
-    GMAKE=make
 else
-    echo "Could not found GNU Make."
-    exit 1
+    GMAKE=make
 fi
 
 # cedet
@@ -26,6 +23,3 @@ fi
 
 # emms
 (cd emms && ${GMAKE} clean all)
-
-# org
-# (cd org && gmake)
