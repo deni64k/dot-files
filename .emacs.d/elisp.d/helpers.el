@@ -58,4 +58,15 @@
       (insert (format "%4d %c\n" i i))))
   (beginning-of-buffer))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; this command quits the minibuffer no matter where the current focus is
+(defun minibuffer-quit ()
+  "Quit the minibuffer command, even when the minibuffer loses focus."
+  (interactive)
+  (when (active-minibuffer-window)
+    (save-window-excursion
+      (select-window (minibuffer-window))
+      (keyboard-escape-quit))))
+(global-set-key (kbd "C-M-g") 'minibuffer-quit)
+
 ;;; helpers.el ends here
