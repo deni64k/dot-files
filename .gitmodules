@@ -13,3 +13,6 @@
 [submodule ".emacs.d/elisp/jabber"]
 	path = .emacs.d/elisp/jabber
 	url = git://catap.ru/emacs-jabber/emacs-jabber
+[submodule ".emacs.d/elisp/undo-tree"]
+	path = .emacs.d/elisp/undo-tree
+	url = http://www.dr-qubit.org/git/undo-tree.git
