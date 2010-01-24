@@ -1,5 +1,5 @@
 ;;; -*- mode: emacs-lisp; -*-
-;;; Time-stamp: "2010-01-08 02:30:30 (dennis)"
+;;; Time-stamp: "2010-01-23 21:17:11 (dennis)"
 ;;;
 ;;; TODO: сделать некую систему режимов, аля (i-am-at 'home) или (i-am-at 'mfi)
 ;;;       если работа происходит с файлами в ~/work/mfi/projects, то грузить
@@ -254,6 +254,7 @@
 (load-file "~/.emacs.d/elisp.d/template-file.el")
 (load-file "~/.emacs.d/elisp.d/twitter.el")
 (load-file "~/.emacs.d/elisp.d/w3m.el")
+(load-file "~/.emacs.d/elisp.d/undo-tree.el")
 (load-file "~/.emacs.d/elisp.d/yasnippet.el")
 ;; TODO: sr-select-window: Wrong type argument: window-live-p, nil
 ;; (load-file "~/.emacs.d/elisp.d/sunrise-commander.el")
