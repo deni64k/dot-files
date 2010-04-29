@@ -6,6 +6,7 @@ for dir in cedet ecb slime w3m; do
 done
 
 # update git projects
-for dir in jabber magit undo-tree; do
-    (cd $dir; git pull)
-done
+#for dir in jabber magit undo-tree; do
+#    (cd $dir; git pull)
+#done
+
