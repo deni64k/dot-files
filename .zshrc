@@ -1,3 +1,5 @@
+[[ -f /etc/profile ]] && source /etc/profile
+
 # Опции общего поведения
 bindkey -e      # peжuм нaвuгaцuu в cтuлe emacs
 bindkey ' ' magic-space    # also do history expansion on space
