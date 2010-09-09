@@ -1,5 +1,3 @@
-[[ -f /etc/profile ]] && source /etc/profile
-
 # Опции общего поведения
 bindkey -e      # peжuм нaвuгaцuu в cтuлe emacs
 bindkey ' ' magic-space    # also do history expansion on space
@@ -7,29 +5,20 @@ bindkey '^I' complete-word # complete on tab, leave expansion to _expand
 
 ## Setting up HOME, END and DELETE keys
 case $TERM in
-  linux)
+  linux|*xterm*|rxvt*|(dt|k|E)term)
     bindkey "^[[2~" yank
     bindkey "^[[3~" delete-char
     bindkey "^[[5~" up-line-or-history
     bindkey "^[[6~" down-line-or-history
-    bindkey "^[[1~" beginning-of-line
-    bindkey "^[[4~" end-of-line
+    bindkey "^[[7~" beginning-of-line
+    bindkey "^[[8~" end-of-line
     bindkey "^[e"   expand-cmd-path ## C-e for expanding path of typed command
     bindkey "^[[A"  up-line-or-search ## up arrow for back-history-search
     bindkey "^[[B"  down-line-or-search ## down arrow for fwd-history-search
     bindkey "^[d"   delete-word
-  ;;
-  *xterm*|rxvt|(dt|k|E)term)
-    bindkey "^[[2~" yank
-    bindkey "^[[3~" delete-char
-    bindkey "^[[5~" up-line-or-history
-    bindkey "^[[6~" down-line-or-history
-    bindkey "^[[H"  beginning-of-line
-    bindkey "^[[F"  end-of-line
-    bindkey "^[e"   expand-cmd-path ## C-e for expanding path of typed command
-    bindkey "^[[A"  up-line-or-search ## up arrow for back-history-search
-    bindkey "^[[B"  down-line-or-search ## down arrow for fwd-history-search
-    bindkey "^[d"   delete-word
+    bindkey ";3D"   backward-char
+    bindkey "^[Oc"  forward-word
+    bindkey "^[Od"  backward-word
   ;;
 esac
 
@@ -164,10 +153,6 @@ for func in $^fpath/*(N-.x:t); autoload $func
 
 # automatically remove duplicates from these arrays
 typeset -U path cdpath fpath manpath
-
-# search path for cd
-typeset -u cdpathc
-cdpath=(.. ~)
 
 # man path
 typeset -u manpath
