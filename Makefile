@@ -9,9 +9,19 @@ git_FILES	= .gitconfig
 xmonad_FILES	= .xmonad
 zsh_FILES	= .zshrc .zshenv .zsh
 
-define package_TEMPLATE =
+define package_TEMPLATE
 .PHONY: install-$(1)
 install-$(1): $(addprefix $(HOME)/,$($(1)_FILES))
+
+showdiff-$(1):
+	@(for file in $($(1)_FILES); do			\
+	    diff -Bbupd $(HOME)/$$$$file $$$$file;	\
+	  done) | $$$$PAGER
+
+rshowdiff-$(1):
+	@(for file in $($(1)_FILES); do			\
+	    diff -Bbupd $$$$file $(HOME)/$$$$file;	\
+	  done) | $$$$PAGER
 
 $(addprefix $(HOME)/,$($(1)_FILES)): $($(1)_FILES)
 	if [ -d $$< ]; then
