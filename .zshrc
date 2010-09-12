@@ -152,12 +152,7 @@ fpath=($fpath $HOME/.zsh/functions)
 for func in $^fpath/*(N-.x:t); autoload $func
 
 # automatically remove duplicates from these arrays
-typeset -U path cdpath fpath manpath
-
-# man path
-typeset -u manpath
-manpath=/(usr/local/man /usr/man /usr/share/man \
-    /usr/local/share/man /usr/X11R6/man/)
+typeset -U path cdpath fpath
 
 ################################################################################
 # some one-time setup things
