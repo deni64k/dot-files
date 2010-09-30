@@ -25,7 +25,7 @@
 ;; highlight elements in the iswitchb buffer list based on matching
 ;; MODE-NAME
 ;;
-;; Example: 
+;; Example:
 ;;   by default, the following MODES are highlighted w/in the iswitchb
 ;;   buffer list
 ;;
@@ -43,18 +43,18 @@
 (require 'iswitchb)
 
 (defface saint/iswitchb-highlight-1-face
-  '((t (:foreground "IndianRed1"))) 
+  '((t (:foreground "IndianRed1")))
   "*Face used to highlight terms in the iswitchb buffer")
 (defface saint/iswitchb-highlight-2-face
-  '((t (:foreground "DarkSeaGreen3"))) 
+  '((t (:foreground "DarkSeaGreen3")))
   "*Face used to highlight terms in the iswitchb buffer")
 (defface saint/iswitchb-highlight-3-face
-  '((t (:foreground "BrightBlack"))) 
+  '((t (:foreground "BrightBlack")))
   "*Face used to highlight terms in the iswitchb buffer")
 
 (defcustom saint/iswitchb-highlight-modes-alist
   '(("Dired"       . 1)
-	("Planner"     . 2)
+        ("Planner"     . 2)
     ("Fundamental" . 3)
     ("Completions" . 3))
   "*List specifying the mode name to face mapping for iswitchb.
@@ -78,24 +78,24 @@ and retrieves the mode-name of each buffer.  Compares the buffer name
 to the `saint/iswitch-highlight-modes-list' and if there's a match,
 then replace the text-property of the buffer name string in the
 buflist."
-  (let ((my-highlight-buflist 
-         (mapcar 
+  (let ((my-highlight-buflist
+         (mapcar
           (lambda (buf)
             (save-excursion
               (set-buffer buf)
               (let* ((match
                       (delq nil
-                            (mapcar 
+                            (mapcar
                              (lambda (x)
                                (if (and (consp x)
-                                        (string-match (car x) mode-name))
+                                        (string-match (car x) (format-mode-line mode-name)))
                                    (cdr x)))
                              saint/iswitchb-highlight-modes-alist)))
                      (face-num (if (and match
                                         (and (listp match)))
                                    (car match)
                                  0)))
-                (cond 
+                (cond
                  ((= face-num 1) (propertize buf 'face 'saint/iswitchb-highlight-1-face))
                  ((= face-num 2) (propertize buf 'face 'saint/iswitchb-highlight-2-face))
                  ((= face-num 3) (propertize buf 'face 'saint/iswitchb-highlight-3-face))
