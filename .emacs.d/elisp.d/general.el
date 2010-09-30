@@ -105,14 +105,16 @@ Require `font-lock'."
 ;; little trick (based on http://www.emacswiki.org/cgi-bin/wiki/ShadyTrees)
 ;; to replace  /home/foo with ~
 (defun negval/title-format ()
-  (if buffer-file-name
-      (replace-regexp-in-string "\\\\" "/"
-                                (replace-regexp-in-string (regexp-quote (getenv "HOME")) "~"
-                                                          (convert-standard-filename buffer-file-name)))
-    (buffer-name)))
-(setq
- frame-title-format '(:eval (negval/title-format))
- icon-title-format  '(:eval (concat "emacs:" (negval/title-format))))
+  (flet ((straight-slashes (s)
+	    (replace-regexp-in-string "\\\\" "/" s))
+	 (fold-tilde (s)
+            (replace-regexp-in-string (regexp-quote (getenv "HOME")) "~" s)))
+    (if buffer-file-name
+      (straight-slashes (fold-tilde (convert-standard-filename buffer-file-name)))
+      (buffer-name))))
+
+(setq frame-title-format '(:eval (negval/title-format))
+      icon-title-format  '(:eval (concat "emacs:" (negval/title-format))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
