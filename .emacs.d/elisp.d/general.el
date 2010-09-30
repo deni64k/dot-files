@@ -120,10 +120,7 @@ Require `font-lock'."
 ;; see http://www.emacswiki.org/cgi-bin/wiki/FileNameCache
 ;; for more tricks with this...
 (when-available 'file-cache-add-directory   ; emacs 22+
-  (progn
-    (defvar cachedirs
-      '("~/" "/etc/"))
-    (dolist (dir cachedirs) (file-cache-add-directory dir))))
+  (dolist (dir '("~/" "/etc/")) (file-cache-add-directory dir)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -183,7 +180,10 @@ Require `font-lock'."
 (setq require-final-newline t)
 
 ;; editing .xpi files directly in Emacs
-(setq auto-mode-alist (cons '("\\.xpi$" . archive-mode) auto-mode-alist))
+(add-to-list 'auto-mode-alist '("\\.xpi$" . archive-mode))
 
+;; adapt to foreign indentation offsets
+;; https://savannah.nongnu.org/projects/dtrt-indent/
+(when (require-maybe 'dtrt-indent) (dtrt-indent-mode t))
 
 ;;; general.el ends here

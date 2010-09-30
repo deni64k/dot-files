@@ -205,12 +205,6 @@
    c++-font-lock-extra-types (quote ("JBF[a-zA-Z0-9]*" "Q[a-zA-Z]*"
                                      "u?int\\([1-9]+_t\\)?"
                                      "\\(::\\)?\\(std\\|boost\\)::[0-9a-zA-Z:_]+")))
-
-  ;; that instead of my own settings; nice for foreign
-  ;; files
-  ;; https://savannah.nongnu.org/projects/dtrt-indent/
-  (when (require-maybe 'dtrt-indent) (dtrt-indent-mode t))
-
   (when (require-maybe 'doxymacs)
     (doxymacs-mode t)
     (doxymacs-font-lock))

@@ -7,3 +7,6 @@
   (local-set-key (kbd "RET") 'ruby-reindent-then-newline-and-indent))
 
 (add-hook 'ruby-mode-hook 'negval/ruby-mode-hook)
+
+(add-to-auto-mode-alist 'ruby-mode '("Rakefile\\'"
+				     "\\.gemspec\\'"))

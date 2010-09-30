@@ -11,9 +11,9 @@
       (eq system-type 'gnu/linux)
       (eq system-type 'linux))
   "Are we running on a Unix or Unix-like system?")
-(defconst +home-p+ (string-match (getenv "PLACEMENT") "home")
+(defconst +home-p+ (string-match (or (getenv "PLACEMENT") "") "home")
   "Am I at home?")
-(defconst +work-p+ (string-match (getenv "PLACEMENT") "work")
+(defconst +work-p+ (string-match (or (getenv "PLACEMENT") "") "work")
   "Am I at work?")
 (defun console-p nil
   "Are we running in a console (non-X) environment?"
