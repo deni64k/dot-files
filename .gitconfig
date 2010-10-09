@@ -11,6 +11,8 @@
         bsi = !git-branch-status -i
         ci = commit
         co = checkout
+	up = pull --rebase
+	put = push origin HEAD
 
         d = diff -C
         ds = diff -C --stat
@@ -35,3 +37,6 @@
         kdo = !gitk --date-order
         kado = !gitk --all --date-order
         kasd = !gitk --all --simplify-by-decoration
+[user]
+	name = Denis Sukhonin
+	email = d.sukhonin@gmail.com
