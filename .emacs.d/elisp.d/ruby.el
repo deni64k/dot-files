@@ -8,5 +8,9 @@
 
 (add-hook 'ruby-mode-hook 'negval/ruby-mode-hook)
 
-(add-to-auto-mode-alist 'ruby-mode '("Rakefile\\'"
+(add-to-auto-mode-alist 'ruby-mode '("\\.rb\\'"
+				     "Capfile\\'"
+				     "Rakefile\\'"
+				     "\\.rake\\'"
+				     "Gemfile\\'"
 				     "\\.gemspec\\'"))
