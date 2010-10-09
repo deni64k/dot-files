@@ -140,10 +140,9 @@ u+wx argument."
 Returns nil when succesful, otherwise an error occured."
   (if (get-buffer "*sudo-output*")      ;if old buffer exists,
       (kill-buffer "*sudo-output*"))    ;kill it to not interfere with output
-  (let ((process-connection-type nil))  ;just use a pipe
-    (apply 'start-process `("sudo-process" "*sudo-output*" "sudo" ,@args)))
-  (sleep-for .25)                      ;give sudo a split second to do its thing
-  (let* ((sudo-process (get-process "sudo-process")) ;before we check its status
+  (let* ((process-connection-type nil)   ;just use a pipe
+	 (sudo-process (apply 'start-process `("sudo-process" "*sudo-output*" "sudo" ,@args)))
+	 (_ (sleep-for .25))
          (sudo-process-status (process-status sudo-process)))
     (cond ((or (null sudo-process-status) ;If sudo is done running...
                (string-equal sudo-process-status "exit"))
