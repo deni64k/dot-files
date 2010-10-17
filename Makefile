@@ -37,6 +37,12 @@ $(foreach package,$(packages),$(eval $(call package_TEMPLATE,$(package))))
 install: install-all
 install-all: $(addprefix install-,$(packages))
 
+showdiff: showdiff-all
+showdiff-all: $(addprefix showdiff-,$(packages))
+
+rshowdiff: rshowdiff-all
+rshowdiff-all: $(addprefix rshowdiff-,$(packages))
+
 .PHONY: dump-var
 dump-var:
 	@echo '$($(VAR))'
