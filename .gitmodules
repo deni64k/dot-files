@@ -15,4 +15,13 @@
 	url = git://catap.ru/emacs-jabber/emacs-jabber
 [submodule ".emacs.d/elisp/undo-tree"]
 	path = .emacs.d/elisp/undo-tree
-	url = http://www.dr-qubit.org/git/undo-tree.git
+	url = http://github.com/emacsmirror/undo-tree.git
+[submodule ".emacs.d/elisp/cedet"]
+	path = .emacs.d/elisp/cedet
+	url = http://github.com/emacsmirror/cedet.git
+[submodule ".emacs.d/elisp/slime"]
+	path = .emacs.d/elisp/slime
+	url = http://github.com/emacsmirror/slime.git
+[submodule ".emacs.d/elisp/w3m"]
+	path = .emacs.d/elisp/w3m
+	url = http://github.com/emacsmirror/w3m.git
