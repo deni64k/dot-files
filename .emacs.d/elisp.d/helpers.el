@@ -74,6 +74,6 @@
 ;; KLUDGE: write more generic helper accepting alist
 (defun add-to-auto-mode-alist (mode patterns)
   (dolist (pattern patterns)
-    (add-to-list 'auto-mode-alist (pattern . mode))))
+    (add-to-list 'auto-mode-alist (cons pattern mode))))
 
 ;;; helpers.el ends here
