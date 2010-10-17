@@ -25,3 +25,6 @@
 [submodule ".emacs.d/elisp/w3m"]
 	path = .emacs.d/elisp/w3m
 	url = http://github.com/emacsmirror/w3m.git
+[submodule ".emacs.d/elisp/distel"]
+	path = .emacs.d/elisp/distel
+	url = http://github.com/emacsmirror/distel.git
