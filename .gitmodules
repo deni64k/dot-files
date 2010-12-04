@@ -25,3 +25,6 @@
 [submodule ".emacs.d/elisp/distel"]
         path = .emacs.d/elisp/distel
         url = http://github.com/emacsmirror/distel.git
+[submodule ".emacs.d/elisp/magit"]
+	path = .emacs.d/elisp/magit
+	url = git://github.com/philjackson/magit.git
