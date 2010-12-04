@@ -4,6 +4,9 @@
 ;; http://xtalk.msk.su/~ott/ru/writings/emacs-devenv/EmacsCedet.html
 ;;
 ;; Enabling Semantic (code-parsing, smart completion) features.
+
+(remove-if (lambda (path) (string-match "/cedet" path)) load-path)
+(add-to-list 'load-path "~/.emacs.d/elisp/cedet")
 (load-file "~/.emacs.d/elisp/cedet/common/cedet.el")
 
 (semantic-load-enable-excessive-code-helpers)
@@ -15,7 +18,6 @@
 (global-srecode-minor-mode 1)
 (global-semantic-mru-bookmark-mode 1)
 (global-semantic-folding-mode 1)      ; hide and show blocks
-(global-semantic-idle-tag-highlight-mode 1)
 
 (require 'semantic-decorate-include)
 (require 'semantic-ia)
