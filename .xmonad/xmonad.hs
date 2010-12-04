@@ -25,13 +25,13 @@ import XMonad.Hooks.ManageDocks
 import XMonad.Hooks.SetWMName
 
 -- XMonad layouts
-import XMonad.Layout.WindowNavigation
-import XMonad.Layout.NoBorders(smartBorders, noBorders)
 import XMonad.Layout.Circle
-import XMonad.Layout.Tabbed
+import XMonad.Layout.Gaps
+import XMonad.Layout.NoBorders
 import XMonad.Layout.PerWorkspace
 import XMonad.Layout.ResizableTile
-import XMonad.Layout.NoBorders
+import XMonad.Layout.Tabbed
+import XMonad.Layout.WindowNavigation
 
 -- XMonad utils
 import XMonad.Util.EZConfig (mkKeymap, checkKeymap, additionalKeys, additionalKeysP)
@@ -61,18 +61,15 @@ foregroundColor = colorGray95
 -- foregroundColor = "grey70"
 
 regularFont = "-*-terminus-medium-r-normal-*-12-*-*-*-*-*-*-r"
-xftFont = "terminus:size=8"
+xftFont = "Monaco:pixelsize=10"
 
-
-statusBarCmd = "~/src/dzen/dzen2"
+statusBarCmd = "dzen2"
                ++ " -bg '" ++ backgroundColor ++ "'"
                ++ " -fg '" ++ foregroundColor ++ "'"
                ++ " -fn '" ++ xftFont ++ "'"
                ++ " -sa c -ta l -w 1600 -h 16"
 
 homeDirectory = unsafePerformIO System.Directory.getHomeDirectory
-
--- statusBarCmd= "~/src/dzen/dzen2 -bg '#2c2c32' -fg 'grey70' -w 1600 -h 16 -sa c -fn '-*-terminus-medium-r-normal-*-12-*-*-*-*-*-*-r' -e '' -ta l"
 
 -- XPConfig options:
 ownXPConfig = defaultXPConfig
@@ -131,7 +128,7 @@ modMask' :: KeyMask
 modMask' = mod4Mask
 
 workspaces' :: [WorkspaceId]
-workspaces' = ["one", "two", "three", "four", "five", "net", "fun", "listen", "console"]
+workspaces' = ["emacs", "two", "three", "four", "five", "net", "fun", "listen", "console"]
 
 borderWidth' :: Dimension
 borderWidth' = 2
@@ -141,7 +138,7 @@ normalBorderColor'  = backgroundColor
 focusedBorderColor' = colorDodgerBlue -- "#adff2f"
 
 terminal' :: String
-terminal' = "xterm"
+terminal' = "urxvt"
 
 -- multimedia keys ------------------------------------------------------------
 xK_XF86AudioLowerVolume = 0x1008ff11
@@ -172,8 +169,6 @@ keys' c = [ ("M-S-<Return>", spawn $ XMonad.terminal c)
           -- adjust current layout
           , ("M-M1-,"      , sendMessage (IncMasterN (-1)))
           , ("M-M1-."      , sendMessage (IncMasterN 1))
-          -- toggle the status bar gap
-          , ("M-b"         , sendMessage ToggleStruts)
           -- switch layout
           , ("M-/"         , sendMessage NextLayout)
           -- XMonad general
@@ -184,6 +179,18 @@ keys' c = [ ("M-S-<Return>", spawn $ XMonad.terminal c)
           , ("M-M1-x"      , nextWS)
           , ("M-t e"       , Search.promptSearch ownXPConfig lingvoEnRu)
           , ("M-t r"       , Search.promptSearch ownXPConfig lingvoRuEn)
+          -- some gap-toggling
+          , ("M-C-p b", sendMessage $ ToggleStrut D)
+          , ("M-C-p t", sendMessage $ ToggleStrut U)
+          , ("M-C-p f", sendMessage $ ToggleStrut L)
+          , ("M-C-p h", sendMessage $ ToggleStrut R)
+          , ("M-C-p a", sendMessage $ ToggleStruts)
+
+          , ("M-C-p g", sendMessage $ ToggleGaps)
+          -- VPN connect/disconnect
+          , ("M-C-n c", unsafeSpawn "sudo vpnc ~/.vpn-acronis")
+          , ("M-C-n d", unsafeSpawn "sudo vpnc-disconnect")
+          , ("M-C-n r", unsafeSpawn "remmina")
           ] ++
           -- mod-[1..9], Switch to workspace N
           -- mod-shift-[1..9], Move client to workspace N
@@ -203,16 +210,6 @@ keys' c = [ ("M-S-<Return>", spawn $ XMonad.terminal c)
           --       getSortByIndexNoSP =
           --           fmap (.scratchpadFilterOutWorkspace) getSortByIndex
 
-{-
-  , ((modMask,               xK_Right       ), sendMessage $ Go R)
-  , ((modMask,               xK_Left        ), sendMessage $ Go L)
-  , ((modMask,               xK_Up          ), sendMessage $ Go U)
-  , ((modMask,               xK_Down        ), sendMessage $ Go D)
-  , ((modMask .|. shiftMask, xK_Right       ), sendMessage $ Swap R)
-  , ((modMask .|. shiftMask, xK_Left        ), sendMessage $ Swap L)
-  , ((modMask .|. shiftMask, xK_Up          ), sendMessage $ Swap U)
-  , ((modMask .|. shiftMask, xK_Down        ), sendMessage $ Swap D)
--}
 -- logHook --------------------------------------------------------------------
 
 -- dynamicLog pretty printer for dzen
@@ -244,7 +241,7 @@ pp' din = defaultPP
 logHook' din = (dynamicLogWithPP $ pp' din)
                >> updatePointer (Relative 0.5 0.5)
 
--- layoutHook -----------------------------------------------------------------
+-- tabConfig' -----------------------------------------------------------------
 
 tabConfig' = defaultTheme
   { activeColor   = "#555753"
@@ -262,28 +259,18 @@ tabConfig' = defaultTheme
   , fontName = "-*-terminus--r-*-*-12-*-*-*-*-*-*-r"
   }
 
---layoutHook' = configurableNavigation noNavigateBorders $ smartBorders $ layouts
---layoutHook' = smartBorders $ layouts
-layoutHook' = layouts
+-- layoutHook' ----------------------------------------------------------------
 
--- layouts
-layouts = avoidStruts $ smartBorders tiled ||| smartBorders (Mirror tiled)  ||| noBorders Full
-  where
-    tiled = ResizableTall 1 (2/100) (1/2) []
-{-
-layouts = avoidStruts
-        $ onWorkspace "mail"  myTabbed
-        $ onWorkspace "www"   myTabbed
-        $ onWorkspace "music" myTabbed
-        $ tiled ||| myTabbed ||| noBorders Full ||| Circle
-  where
-    tiled   = Tall nmaster delta ratio
-    nmaster = 1
-    delta   = 3/100
-    ratio   = 1/2
-    myTabbed = noBorders(tabbed shrinkText tabConfig')
--}
+layoutHook' = avoidStrutsOn [U, D]
+            $ gaps (zip [U, D, L, R] (repeat 0))
+            $ smartBorders
+            $ onWorkspaces ["emacs", "net", "console"]
+                           (Full ||| tiled' ||| (Mirror tiled'))
+            $ tiled' ||| (Mirror tiled') ||| Full
+    where tiled' = ResizableTall 1 (2/100) (1/2) []
+
 -- manageHook -----------------------------------------------------------------
+
 manageHook' = composeAll
   -- force floating
   [ className =? "MPlayer"        --> doFloat
@@ -291,13 +278,15 @@ manageHook' = composeAll
   , className =? "Gajim.py"       --> doFloat
   , className =? "Downbar"        --> doFloat
   , className =? "Extension"      --> doFloat
-  --, className =? "Firefox"        --> doFloat
+  , className =? "Qutim"          --> doFloat
+  , className =? "Skype"          --> doFloat
   , appName   =? "Download"       --> doFloat
   , appName   =? "Dialog"         --> doFloat
   , appName   =? "xmessage"       --> doFloat
   , appName   =? "QEMU"           --> doFloat
 
   -- bind windows to workspaces
+  , className =? "Chromium"       --> doF (W.shift "net")
   , className =? "Thunderbird"    --> doF (W.shift "net")
   , className =? "Icedove"        --> doF (W.shift "net")
   , className =? "Firefox"        --> doF (W.shift "net")
