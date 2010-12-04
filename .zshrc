@@ -158,7 +158,7 @@ typeset -U path cdpath fpath
 # some one-time setup things
 #
 # create ~/.tmp and ~/.emacs.d/backups if it's not there yet
-for __path in $HOME/.tmp $HOME/.emacs.d/backups; do
+for __path in $HOME/.tmp $HOME/.emacs.d/backups $HOME/.tmp/semanticdb; do
     test -e ${__file} || mkdir -p ${__file}
 done
 ################################################################################
