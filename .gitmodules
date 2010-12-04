@@ -1,9 +1,6 @@
 [submodule ".emacs.d/elisp/emms"]
         path = .emacs.d/elisp/emms
         url = git://git.sv.gnu.org/emms.git
-[submodule ".emacs.d/elisp/magit"]
-        path = .emacs.d/elisp/magit
-        url = git://gitorious.org/magit/mainline.git
 [submodule ".emacs.d/elisp/swank-clojure"]
         path = .emacs.d/elisp/swank-clojure
         url = git://github.com/jochu/swank-clojure.git
@@ -11,20 +8,20 @@
         path = .emacs.d/elisp/clojure-mode
         url = git://github.com/jochu/clojure-mode.git
 [submodule ".emacs.d/elisp/jabber"]
-	path = .emacs.d/elisp/jabber
-	url = git://catap.ru/emacs-jabber/emacs-jabber
+        path = .emacs.d/elisp/jabber
+        url = git://catap.ru/emacs-jabber/emacs-jabber
 [submodule ".emacs.d/elisp/undo-tree"]
-	path = .emacs.d/elisp/undo-tree
-	url = http://github.com/emacsmirror/undo-tree.git
+        path = .emacs.d/elisp/undo-tree
+        url = http://github.com/emacsmirror/undo-tree.git
 [submodule ".emacs.d/elisp/cedet"]
-	path = .emacs.d/elisp/cedet
-	url = http://github.com/emacsmirror/cedet.git
+        path = .emacs.d/elisp/cedet
+        url = http://github.com/emacsmirror/cedet.git
 [submodule ".emacs.d/elisp/slime"]
-	path = .emacs.d/elisp/slime
-	url = http://github.com/emacsmirror/slime.git
+        path = .emacs.d/elisp/slime
+        url = http://github.com/emacsmirror/slime.git
 [submodule ".emacs.d/elisp/w3m"]
-	path = .emacs.d/elisp/w3m
-	url = http://github.com/emacsmirror/w3m.git
+        path = .emacs.d/elisp/w3m
+        url = http://github.com/emacsmirror/w3m.git
 [submodule ".emacs.d/elisp/distel"]
-	path = .emacs.d/elisp/distel
-	url = http://github.com/emacsmirror/distel.git
+        path = .emacs.d/elisp/distel
+        url = http://github.com/emacsmirror/distel.git
