@@ -67,7 +67,7 @@ statusBarCmd = "dzen2"
                ++ " -bg '" ++ backgroundColor ++ "'"
                ++ " -fg '" ++ foregroundColor ++ "'"
                ++ " -fn '" ++ xftFont ++ "'"
-               ++ " -sa c -ta l -w 1600 -h 16"
+               ++ " -sa c -ta l -w 1250 -h 16"
 
 homeDirectory = unsafePerformIO System.Directory.getHomeDirectory
 
