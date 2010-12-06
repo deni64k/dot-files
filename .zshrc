@@ -17,6 +17,8 @@ case $TERM in
     bindkey "^[[B"  down-line-or-search ## down arrow for fwd-history-search
     bindkey "^[d"   delete-word
     bindkey ";3D"   backward-char
+    bindkey ";5C"   forward-word
+    bindkey ";5D"   backward-word
     bindkey "^[Oc"  forward-word
     bindkey "^[Od"  backward-word
   ;;
