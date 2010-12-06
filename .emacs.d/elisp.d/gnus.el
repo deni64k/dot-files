@@ -29,6 +29,16 @@
                       (nnimap-address "imap.gmail.com")
                       (nnimap-server-port 993)
                       (nnimap-stream ssl)))
+(dolist (dir (list "unsorted"
+		   "exception.notifier/unsorted"
+		   "exception.notifier/tm-admin"
+		   "exception.notifier/telemarker"
+		   "commits/unsorted"
+		   "commits/tm-admin"
+		   "commits/telemarker"))
+  (add-to-list 'gnus-secondary-select-methods
+	       `(nnmaildir ,(concat "negval@undev.ru/" dir) (directory ,(concat "~/mail/" dir))))
+  (add-to-list 'mail-sources `(maildir :path ,(concat "~/mail/" dir))))
 
 (setq message-send-mail-function 'smtpmail-send-it
       smtpmail-starttls-credentials '(("smtp.gmail.com" 587 nil nil))

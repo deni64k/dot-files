@@ -66,7 +66,7 @@ xftFont = "Monaco:pixelsize=10"
 statusBarCmd = "dzen2"
                ++ " -bg '" ++ backgroundColor ++ "'"
                ++ " -fg '" ++ foregroundColor ++ "'"
-               ++ " -fn '" ++ xftFont ++ "'"
+               ++ " -fn '" ++ regularFont ++ "'"
                ++ " -sa c -ta l -w 1600 -h 16"
 
 homeDirectory = unsafePerformIO System.Directory.getHomeDirectory

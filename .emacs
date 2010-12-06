@@ -1,5 +1,5 @@
 ;;; -*- mode: emacs-lisp; -*-
-;;; Time-stamp: "2010-01-23 21:17:11 (dennis)"
+;;; Time-stamp: "2010-10-18 17:20:44 (user)"
 ;;;
 ;;; TODO: сделать некую систему режимов, аля (i-am-at 'home) или (i-am-at 'mfi)
 ;;;       если работа происходит с файлами в ~/work/mfi/projects, то грузить
@@ -62,8 +62,8 @@
 
 ;; load some files
 (require-maybe 'generic-x)  ; nice mode for config-files
-(require 'rails)
-(require 'php-mode)
+;(require 'rails)
+;(require 'php-mode)
 (require 'diff-plus-mode)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -286,13 +286,14 @@
 
 (load-file "~/.emacs.d/elisp.d/c-cxx.el")
 (load-file "~/.emacs.d/elisp.d/cmake.el")
-(load-file "~/.emacs.d/elisp.d/clojure.el")
-(load-file "~/.emacs.d/elisp.d/slime.el")
+;(load-file "~/.emacs.d/elisp.d/clojure.el")
+;(load-file "~/.emacs.d/elisp.d/slime.el")
 (load-file "~/.emacs.d/elisp.d/emacs-lisp.el")
 (load-file "~/.emacs.d/elisp.d/erlang.el")
 (load-file "~/.emacs.d/elisp.d/forth.el")
 (load-file "~/.emacs.d/elisp.d/haskell.el")
 (load-file "~/.emacs.d/elisp.d/lisp.el")
+(load-file "~/.emacs.d/elisp.d/javascript.el")
 (load-file "~/.emacs.d/elisp.d/makefile.el")
 (load-file "~/.emacs.d/elisp.d/perl.el")
 (load-file "~/.emacs.d/elisp.d/rpm.el")

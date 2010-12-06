@@ -39,6 +39,6 @@
         kasd = !gitk --all --simplify-by-decoration
 [user]
 	name = Denis Sukhonin
-	email = d.sukhonin@gmail.com
+        email = negval@undev.ru
 [github]
         user = neglectedvalue

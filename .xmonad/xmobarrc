@@ -1,4 +1,4 @@
-Config { font = "Monaco:pixelsize=10"
+Config { font = "-*-terminus-medium-r-normal-*-12-*-*-*-*-*-*-r"
        , bgColor = "#0d0d0d"
        , fgColor = "#f5f5f5"
        , position = Bottom
@@ -10,11 +10,7 @@ Config { font = "Monaco:pixelsize=10"
                               , "--high",   "red"
                               , "--low",    "lightblue" ]
                               36000
-                    , Run Com "mpc"
-                              [ "--format", "'[%artist% - ][%album% - ]%title%'", "current" ]
-                              "music"
-                              20
-                    , Run Network "wlan0"
+                    , Run Network "eth0"
                               [ "-L", "10", "-H", "1000"
                               , "--normal", "#adff2f"
                               , "--high",   "red" ]
@@ -28,12 +24,11 @@ Config { font = "Monaco:pixelsize=10"
                     , Run Swap [] 10
                     , Run Com "uname" [ "-sr" ] "" 36000
                     , Run Date "%a %b %_d %Y %H:%M:%S" "date" 10
-                    , Run Battery ["-L","25","-H","75","--high","green","--normal","yellow", "--low", "red"] 10
                     , Run StdinReader
                     ]
        , sepChar = "%"
        , alignSep = "}{"
-       , template = "%StdinReader%%cpu% <fc=#404040>|</fc> %memory% <fc=#404040>|</fc> %swap% <fc=#404040>|</fc> %wlan0% }{ <fc=#ffa500>%date%</fc> <fc=#404040>|</fc> %UUDD% <fc=#404040>|</fc> %battery% <fc=#404040>|</fc> <fc=#1e90ff>%uname%</fc>"
+       , template = "%StdinReader%%cpu% <fc=#404040>|</fc> %memory% <fc=#404040>|</fc> %swap% <fc=#404040>|</fc> %eth0% }{ <fc=#ffa500>%date%</fc> <fc=#404040>|</fc> %UUDD% <fc=#404040>|</fc> <fc=#1e90ff>%uname%</fc>"
        }
 
 -- Local variables:
