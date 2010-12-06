@@ -35,8 +35,7 @@
       smtpmail-auth-credentials '(("smtp.gmail.com" 587 "d.sukhonin@gmail.com" nil))
       smtpmail-default-smtp-server "smtp.gmail.com"
       smtpmail-smtp-server "smtp.gmail.com"
-      smtpmail-smtp-service 587
-      smtpmail-local-domain "yourcompany.com")
+      smtpmail-smtp-service 587)
 
 ;; Tree view for groups.  I like the organisational feel this has.
 (add-hook 'gnus-group-mode-hook 'gnus-topic-mode)
