@@ -273,9 +273,11 @@
       display-time-load-average-threshold 20)
 (display-time)
 
-(setq calendar-latitude 56.19)
-(setq calendar-longitude 44.00)
-(setq calendar-location-name "Nizhniy Novgorod, Russia")
+;; Moscow:           latitude 55.752 N, longitude 37.615 E
+;; Nizhniy Novgorod: latitude 56.19  N, longitude 44.00  E
+(setq calendar-latitude 55.752)
+(setq calendar-longitude 37.615)
+(setq calendar-location-name "Moscow, Russia")
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
