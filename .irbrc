@@ -10,6 +10,7 @@ def require_maybe(file)
   end
 end
 
+require_maybe 'rubygems'
 require_maybe 'wirble' do
   Wirble.init
   Wirble.colorize
@@ -56,7 +57,6 @@ IRB.conf[:PROMPT][:CUSTOM] = {
 IRB.conf[:PROMPT_MODE] = :CUSTOM
 IRB.conf[:AUTO_INDENT] = true
 
-require_maybe 'rubygems'
 require_maybe 'awesome_print' do
   IRB::Irb.class_eval do
     def output_value
