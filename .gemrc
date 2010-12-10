@@ -1,0 +1,12 @@
+---
+:benchmark: false
+:verbose: true
+gem: --ri --rdoc
+:update_sources: true
+:sources:
+- http://gemcutter.org
+#- http://gems.rubyforge.org
+- http://gems.github.com
+:backtrace: false
+:bulk_threshold: 1000
+rdoc: --inline-source --line-numbers -f html -a -w 2 --template=hanna
