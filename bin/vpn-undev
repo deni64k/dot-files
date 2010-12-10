@@ -11,7 +11,7 @@ set -e
 vpnc ${HOME}/.vpn-undev
 for ip in 192.168.216.1 192.168.215.1; do
   if ! grep -q "nameserver \${ip}" /etc/resolv.conf; then
-    echo nameserver \${ip} >> /etc/resolv.conf
+    sed "1 i nameserver \${ip}" /etc/resolv.conf -i
   fi
 done
 EOF
