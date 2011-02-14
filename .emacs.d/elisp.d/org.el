@@ -7,10 +7,14 @@
  '(mark-diary-entries-in-calendar t)
  '(diary-file "~/documents/org/diary")
  '(org-agenda-files (list "~/documents/org/TODO.org"
-                          "~/documents/org/programming.org"))
+                          "~/documents/org/Money.org"
+                          "~/documents/org/Programming.org"))
  '(org-default-notes-file "~/documents/org/notes.org")
  '(org-directory "~/documents/org")
  '(org-insert-mode-line-in-empty-file t))
+
+(setq org-mobile-directory "~/Dropbox/MobileOrg")
+(setq org-mobile-inbox-for-pull "~/Dropbox/inbox.org")
 
 (require 'org-install)
 (require 'org)
