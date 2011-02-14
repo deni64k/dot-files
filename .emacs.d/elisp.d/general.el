@@ -20,9 +20,9 @@
 (setq search-highlight t         ; highlight when searching...
       query-replace-highlight t) ; ...and replacing
 
-(fset 'yes-or-no-p 'y-or-n-p)    ; enable one letter y/n answers to yes/no
-
 (defalias 'qrr 'query-replace-regexp) ; search and replace by regular expression
+
+(fset 'yes-or-no-p 'y-or-n-p)    ; enable one letter y/n answers to yes/no
 
 (global-font-lock-mode t)         ; always do syntax highlighting
 (when (require-maybe 'jit-lock)   ; enable JIT to make font-lock faster
@@ -106,8 +106,8 @@ Require `font-lock'."
 ;; to replace  /home/foo with ~
 (defun negval/title-format ()
   (flet ((straight-slashes (s)
-	    (replace-regexp-in-string "\\\\" "/" s))
-	 (fold-tilde (s)
+            (replace-regexp-in-string "\\\\" "/" s))
+         (fold-tilde (s)
             (replace-regexp-in-string (regexp-quote (getenv "HOME")) "~" s)))
     (if buffer-file-name
       (straight-slashes (fold-tilde (convert-standard-filename buffer-file-name)))
@@ -187,5 +187,11 @@ Require `font-lock'."
 ;; adapt to foreign indentation offsets
 ;; https://savannah.nongnu.org/projects/dtrt-indent/
 (when (require-maybe 'dtrt-indent) (dtrt-indent-mode t))
+
+;; winner-mode
+;; switching back and forth between configurations with the key
+;; commands 'C-c left' and 'C-c right'
+(when (fboundp 'winner-mode)
+  (winner-mode 1))
 
 ;;; general.el ends here

@@ -7,8 +7,8 @@
   (auto-fill-mode t)                      ; ... and wrapped around automagically
 
   ;; http://taiyaki.org/elisp/word-count/src/word-count.el
-  (when (require-maybe 'word-count) ; count the words
-    (word-count-mode t))
+  ; (when (require-maybe 'word-count) ; count the words
+  ;   (word-count-mode t))
 
   (when (require-maybe 'filladapt) ; do the intelligent wrapping of lines,...
     (filladapt-mode t))) ; ... (bullets, numbering) if

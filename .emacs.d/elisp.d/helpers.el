@@ -76,4 +76,30 @@
   (dolist (pattern patterns)
     (add-to-list 'auto-mode-alist (cons pattern mode))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; set up url-proxy-services
+(require 'url)
+
+(defun negval/parse-url (url)
+  (let ((regex (rx ;; protocol
+                   (group "http") "://"
+                   ;; user:password@
+                   (opt (+ (or alnum digit)) ":" (+ (or alnum digit)) "@")
+                   ;; host:port
+                   (group (+ (or alnum digit "."))) (opt ":" (group (+ digit))))))
+    (string-match regex url)
+    (let ((protocol (match-string-no-properties 1 url))
+          (host (match-string-no-properties 2 url))
+          (port (or (match-string-no-properties 3 url) "3128")))
+      (values protocol host port))))
+
+(mapc (lambda (pair)
+        (let ((service (car pair))
+              (url (getenv (cdr pair))))
+          (if url
+              (multiple-value-bind (proto host port) (negval/parse-url url)
+                (setf url-proxy-services
+                      (acons service (concat host ":" port) url-proxy-services))))))
+      '(("http" . "http_proxy") ("ftp" . "ftp_proxy")))
+
 ;;; helpers.el ends here

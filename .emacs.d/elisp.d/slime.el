@@ -1,9 +1,6 @@
 ;;; slime.el ---
 ;;; Copyright (c) 2010, Denis Sukhonin <d.sukhonin@gmail.com>
 
-(add-to-list 'load-path "~/.emacs.d/elisp/slime")
-(add-to-list 'load-path "~/.emacs.d/elisp/slime/contrib")
-
 (require 'slime-autoloads)
 (slime-setup)
 (add-hook 'lisp-mode-hook (lambda () (slime-mode t)))

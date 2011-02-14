@@ -1,7 +1,6 @@
 ;;; clojure.el ---
 ;;; Copyright (c) 2010, Denis Sukhonin <d.sukhonin@gmail.com>
 
-(add-to-list 'load-path "~/.emacs.d/elisp/clojure-mode")
 (require 'clojure-mode)
 
 (defun negval/clojure-mode-hook ()
@@ -24,9 +23,8 @@
                                       clj-contrib-jar-path
                                       ))
 
-(add-to-list 'load-path "~/.emacs.d/elisp/swank-clojure/src/emacs")
-
 (require 'swank-clojure)
+
 (add-hook 'slime-indentation-update-hooks 'swank-clojure-update-indentation)
 (add-hook 'slime-repl-mode-hook 'swank-clojure-slime-repl-modify-syntax t)
 (add-hook 'clojure-mode-hook 'swank-clojure-slime-mode-hook t)

@@ -1,10 +1,4 @@
 ;;; -*- mode: emacs-lisp; -*-
-;;; Time-stamp: "2010-01-23 21:17:11 (dennis)"
-;;;
-;;; TODO: сделать некую систему режимов, аля (i-am-at 'home) или (i-am-at 'mfi)
-;;;       если работа происходит с файлами в ~/work/mfi/projects, то грузить
-;;;       соответствующий режим. По умолчанию home. (:
-;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; jump to the debugger when an error is found
 (setq debug-on-error t)
@@ -14,114 +8,24 @@
 ;; where I store my elisp stuff
 (setq load-path
       (nconc '("~/.emacs.d/elisp"
-               "~/.emacs.d/elisp/color-theme"
                "~/.emacs.d/elisp/doxymacs/lisp"
                "~/.emacs.d/elisp/dtrt-indent"
-               "~/.emacs.d/elisp/jabber"
-               "~/.emacs.d/elisp/magit"
                "~/.emacs.d/elisp/nav"
                "~/.emacs.d/elisp/rails"
-               "~/.emacs.d/elisp/ruby"
                )
              load-path
              ))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; load helpers
+(require 'cl)
 (load-file "~/.emacs.d/elisp.d/helpers.el")
 (load-file "~/.emacs.d/elisp.d/constants.el")
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; set up url-proxy-services
-(require 'url)
-(require 'cl)
-
-(defun negval/parse-url (url)
-  (let ((regex (rx ;; protocol
-                   (group "http") "://"
-                   ;; user:password@
-                   (opt (+ (or alnum digit)) ":" (+ (or alnum digit)) "@")
-                   ;; host:port
-                   (group (+ (or alnum digit "."))) (opt ":" (group (+ digit))))))
-    (string-match regex url)
-    (let ((protocol (match-string-no-properties 1 url))
-          (host (match-string-no-properties 2 url))
-          (port (or (match-string-no-properties 3 url) "3128")))
-      (values protocol host port))))
-
-(mapc (lambda (pair)
-        (let ((service (car pair))
-              (url (getenv (cdr pair))))
-          (if url
-              (multiple-value-bind (proto host port) (negval/parse-url url)
-                (setf url-proxy-services
-                      (acons service (concat host ":" port) url-proxy-services))))))
-      '(("http" . "http_proxy") ("ftp" . "ftp_proxy")))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(load-file "~/.emacs.d/elisp.d/el-get.el")
 
 ;; load some files
 (require-maybe 'generic-x)  ; nice mode for config-files
 (require 'rails)
 (require 'php-mode)
 (require 'diff-plus-mode)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; auto-install (http://www.emacswiki.org/emacs/AutoInstall)
-(when (require-maybe 'auto-install)
-  (setq auto-install-directory "~/.emacs.d/elisp/")
-  ;;(auto-install-update-emacswiki-package-name nil)
-  )
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; recent files
-;; (when (require-maybe 'recentf)
-;;   (progn
-;;     (recentf-mode t)
-;;     (setq recentf-max-saved-items 500)
-;;     (setq recentf-max-menu-items 60)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; ms-windows specific settings
-;; when running on windows, set the face explicitely (no regedit)
-;; http://www.emacswiki.org/cgi-bin/wiki/MsWindowsRegistry
-(when +win32-p+
-  (progn
-    (set-face-font
-     'default "-outline-Consolas-normal-r-normal-normal-13-97-96-96-c-*-iso8859-5")
-    ;; by default; start with 80x30 frames; FIXME: this conflicts with vm
-    (add-to-list 'default-frame-alist '(height . 60))      ; 30 lines
-    (add-to-list 'default-frame-alist '(width . 100))      ; 80 columns
-    ;; NOTE: for X, we use ~/.Xresources for the fonts; it's faster
-
-    (setq frame-maximized t)
-    (defun w32-restore-frame ()
-      "Restore a minimized frame"
-      (w32-send-sys-command 61728))
-    (defun w32-maximize-frame ()
-      "Maximize the current frame"
-      (w32-send-sys-command 61488))
-    (defun w32-maximize-or-restore-frame ()
-      (interactive)
-      (if frame-maximized
-          (w32-maximize-frame))
-      (unless frame-maximized
-        (w32-restore-frame))
-      (setq frame-maximized (not frame-maximized)))
-    (global-set-key [C-f4] 'w32-maximize-or-restore-frame)
-
-    ;; TODO: set printer
-    ;; Use this if you have a network printer
-    ;; (setq printer-name "//red-prn-12/corp0066")
-
-    ;; Use this if you have GhostScript 5.50 installed
-    ;; (setenv "GS_LIB" "d:\\gstools\\gs5.50;d:\\gstools\\gs5.50\\fonts")
-    ;; (setq ps-lpr-command "d:/gstools/gs5.50/gswin32c")
-    ;; (setq ps-lpr-switches '("-q" "-dNOPAUSE" "-dBATCH" "-sDEVICE=mswinprn2"))
-    ;; (setq ps-printer-name t)
-    ))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; jump to the matching parenthesis
@@ -155,10 +59,6 @@
 (global-set-key (kbd "<C-s-up>")   'previous-error)
 (global-set-key (kbd "<C-s-down>") 'next-error)
 
-;; function keys
-;; (global-set-key (kbd "<f11>")  'negval/full-screen-toggle)
-(global-set-key (kbd "<f12>")  'recentf-open-files)
-
 (defmacro negval/term-program (name use-existing &optional key)
   "* macro to make a defun to start some term progr PRG, and optionally,"
   " add a keybinding to it"
@@ -171,7 +71,7 @@
 (negval/term-program zsh t (kbd "s-<f1>"))  ; the ubershell
 
 (global-set-key (kbd "s-<f2>") 'gnus)
-(global-set-key (kbd "s-<f5>")  (lambda () (interactive) (find-file "~/projects/")))
+(global-set-key (kbd "s-<f5>")  (lambda () (interactive) (find-file "~/src/")))
 (global-set-key (kbd "s-<f6>")  (lambda () (interactive) (find-file "~/documents/org")))
 (global-set-key (kbd "s-<f9>")  (lambda () (interactive) (switch-to-buffer "*scratch*")))
 (global-set-key (kbd "s-<f10>") (lambda () (interactive) (find-file "~/.emacs")))
@@ -194,27 +94,14 @@
 (global-set-key (kbd "C-c C-c") 'comment-region)
 (global-set-key (kbd "C-c C-u") 'uncomment-region)
 
-;; zooming in and zooming out in emacs like in firefox
-;; zooming; inspired by http://blog.febuiles.com/page/2/
-;; (defun negval/zoom (n) (interactive)
-;;   (set-face-attribute 'default (selected-frame) :height
-;;     (+ (face-attribute 'default :height) (* (if (> n 0) 1 -1) 10))))
-
-;; (global-set-key (kbd "C-+")      '(lambda()(interactive(negval/zoom 1))))
-;; (global-set-key [C-kp-add]       '(lambda()(interactive(negval/zoom 1))))
-;; (global-set-key (kbd "C--")      '(lambda()(interactive(negval/zoom -1))))
-;; (global-set-key [C-kp-subtract]  '(lambda()(interactive(negval/zoom -1))))
-
 ;; cicle through buffers with Ctrl-Tab (like Firefox)
-;; TODO: some smarter version that ignores certain buffers, see:
-;; http://www.emacswiki.org/cgi-bin/wiki/ControlTABbufferCycling
 (global-set-key [(control tab)] 'other-window)
 
 ;; isearch - the defaults are _so_ annoying... (well, not really global but..)
 (define-key isearch-mode-map (kbd "<backspace>") 'isearch-del-char) ; bs == bs
 (define-key isearch-mode-map (kbd "<delete>") 'isearch-delete-char) ; del == del
 
-;; be able to do Ctrl-X, u/l  to upper/lowercase regions without confirm
+;; be able to do Ctrl-X, u/l to upper/lowercase regions without confirm
 (put 'downcase-region 'disabled nil)
 (put 'upcase-region 'disabled nil)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -240,24 +127,20 @@
 (load-file "~/.emacs.d/elisp.d/tramp.el")
 (load-file "~/.emacs.d/elisp.d/cedet.el")
 (load-file "~/.emacs.d/elisp.d/ecb.el")
-(load-file "~/.emacs.d/elisp.d/emms.el")
 (load-file "~/.emacs.d/elisp.d/flymake.el")
 (load-file "~/.emacs.d/elisp.d/git.el")
 (load-file "~/.emacs.d/elisp.d/gnus.el")
 (load-file "~/.emacs.d/elisp.d/greek.el")
 (load-file "~/.emacs.d/elisp.d/ispell.el")
 (load-file "~/.emacs.d/elisp.d/iswitchb.el")
-(load-file "~/.emacs.d/elisp.d/jabber.el")
+;(load-file "~/.emacs.d/elisp.d/jabber.el")
 (load-file "~/.emacs.d/elisp.d/nav.el")
 (load-file "~/.emacs.d/elisp.d/org.el")
 (load-file "~/.emacs.d/elisp.d/saveplace.el")
 (load-file "~/.emacs.d/elisp.d/template-file.el")
-(load-file "~/.emacs.d/elisp.d/twitter.el")
 (load-file "~/.emacs.d/elisp.d/w3m.el")
 (load-file "~/.emacs.d/elisp.d/undo-tree.el")
 (load-file "~/.emacs.d/elisp.d/yasnippet.el")
-;; TODO: sr-select-window: Wrong type argument: window-live-p, nil
-;; (load-file "~/.emacs.d/elisp.d/sunrise-commander.el")
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -301,23 +184,6 @@
 (load-file "~/.emacs.d/elisp.d/sh.el")
 (load-file "~/.emacs.d/elisp.d/tex.el")
 (load-file "~/.emacs.d/elisp.d/text.el")
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; compilation; if compilation is successful, autoclose the compilation win
-;; http://www.emacswiki.org/cgi-bin/wiki/ModeCompile
-;; TODO: don't hide when there are warnings either (not just errors)
-(setq compilation-window-height 12)
-;; (setq compilation-finish-functions 'compile-autoclose)
-;; (defun compile-autoclose (buffer string)
-;;   (cond ((and (string-match "finished" string)
-;;            (not (string-match "warning" string)))
-;;           (message "Build maybe successful: closing window.")
-;;           (run-with-timer 2 nil
-;;             'delete-window
-;;             (get-buffer-window buffer t)))
-;;     (t
-;;       (message "Compilation exited abnormally: %s" string))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

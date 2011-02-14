@@ -72,8 +72,7 @@
 
 (defun greek-symbols-in-lisp ()
   (substitute-patterns-with-unicode
-   (list (cons "\\(nil\\)" 'nil)
-         (cons "\\<\\(sqrt\\)\\>" 'square-root)
+   (list (cons "\\<\\(sqrt\\)\\>" 'square-root)
          (cons "\\<\\(not\\)\\>" 'logical-neg)
          (cons "\\<\\(lambda\\)\\>" 'lambda)
          (cons "\\<\\(alpha\\)\\>" 'alpha)

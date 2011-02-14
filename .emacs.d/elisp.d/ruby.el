@@ -1,3 +1,5 @@
+(add-to-list 'load-path "~/.emacs.d/elisp/ruby")
+
 (require 'ruby-mode)
 (require 'ruby-electric)
 

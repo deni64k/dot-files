@@ -1,8 +1,6 @@
 ;;; x.el ---
 ;; Copyright (c) 2009, Denis Sukhonin <d.sukhonin@gmail.com>
 
-(require 'color-theme)
-
 (defun negval/x-clipboard nil
   (setq x-select-enable-clipboard nil)      ; copy-paste should work ...
   (setq interprogram-paste-function         ; ...with...
@@ -303,6 +301,13 @@
 (negval/x-dark-theme)
 (negval/x-bars)
 (negval/x-etc)
+
+(add-hook 'after-make-frame-functions
+          (lambda (frame)
+            (set-variable 'color-theme-is-global nil)
+            (select-frame frame)
+            (unless window-system
+              (color-theme-tty-dark))))
 
 (add-hook 'post-command-hook 'hcz-set-cursor-color-according-to-mode)
 

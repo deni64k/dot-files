@@ -5,9 +5,7 @@
 ;;
 ;; Enabling Semantic (code-parsing, smart completion) features.
 
-(remove-if (lambda (path) (string-match "/cedet" path)) load-path)
-(add-to-list 'load-path "~/.emacs.d/elisp/cedet")
-(load-file "~/.emacs.d/elisp/cedet/common/cedet.el")
+(require 'cedet)
 
 (semantic-load-enable-excessive-code-helpers)
 ;;(semantic-load-enable-semantic-debugging-helpers)
