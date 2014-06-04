@@ -48,6 +48,3 @@
 [core]
 	ignorecase = false
 	compression = 6
-
-[push]
-	default = simple
