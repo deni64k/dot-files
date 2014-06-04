@@ -1,0 +1,10 @@
+#!/bin/sh
+
+SUBLIME_BIN_MAC="/Applications/Sublime Text.app/Contents/SharedSupport/bin/subl"
+SUBLIME_BIN_UNIX="subl"
+
+if test -x "${SUBLIME_BIN_MAC}"; then
+  exec "${SUBLIME_BIN_MAC}"
+else
+  exec /usr/bin/env "${SUBLIME_BIN_UNIX}"
+fi
