@@ -1,3 +1,8 @@
+#
+# To install oh-my-zsh run this:
+# curl -L http://install.ohmyz.sh | sh
+#
+
 # Path to your oh-my-zsh configuration.
 ZSH=$HOME/.oh-my-zsh
 
@@ -51,4 +56,6 @@ plugins=(brew osx github web-search                           \
          common-aliases colored-man                           \
          )
 
-source $ZSH/oh-my-zsh.sh
+if [ -d "${ZSH}" ]; then
+  source $ZSH/oh-my-zsh.sh
+fi
