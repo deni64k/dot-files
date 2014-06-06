@@ -1,4 +1,3 @@
 #!/bin/sh
 # This script opens an SSH connection through an I2P SOCKS tunnel
-
 ssh -o ProxyCommand="${HOME}/.bin/i2p-socks-proxy %h %p" $@

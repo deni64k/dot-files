@@ -3,9 +3,9 @@
 . .helpers.sh
 
 if [ "${OS}" == 'Mac' ]; then
-  BIN="/Applications/Sublime Text.app/Contents/SharedSupport/bin/subl"
+  BIN="/Applications/Atom.app/Contents/Resources/app/atom.sh"
 elif [ "${OS}" == 'Linux' ]; then
-  BIN="sublime"
+  BIN="atom"
 else
   echo "Your platform ($(uname -a)) is not supported."
   exit 1

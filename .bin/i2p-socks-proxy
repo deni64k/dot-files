@@ -1,4 +1,3 @@
 #!/bin/sh
 # This script connects to an I2P SOCKS tunnel using netcat
-
 nc -x127.0.0.1:8541 -X5 $*
