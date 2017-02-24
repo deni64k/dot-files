@@ -11,7 +11,7 @@ strerror() {
   perl -MPOSIX -e "print strerror($1).\"\\n\";"
 }
 
-if ! type pbpaste; then
+if ! type pbpaste >/dev/null 2>&1; then
   alias pbpaste="xclip -o"
   alias pbcopy="xclip -sel clip"
 fi
