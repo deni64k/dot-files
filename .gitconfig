@@ -48,3 +48,5 @@
 [core]
 	ignorecase = false
 	compression = 6
+[url "git@github.com:housinganywhere"]
+	insteadOf = https://github.com/housinganywhere
