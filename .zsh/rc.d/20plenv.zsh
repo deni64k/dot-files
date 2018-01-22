@@ -1,3 +1,1 @@
-if command -v plenv; then
-  eval "$(plenv init -)"
-fi
+hash plenv >/dev/null 2>&1 && eval "$(plenv init -)"

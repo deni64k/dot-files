@@ -1,6 +1,6 @@
-if test -f /usr/local/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh; then
-  export ZSH_HIGHLIGHT_HIGHLIGHTERS_DIR=/usr/local/share/zsh-syntax-highlighting/highlighters
-  source /usr/local/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+if test -f "${ZSH_HIGHLIGHT_HIGHLIGHTERS_DIR}"; then
+  source "${ZSH_HIGHLIGHT_HIGHLIGHTERS_DIR}"
+
   ZSH_HIGHLIGHT_HIGHLIGHTERS=(main brackets pattern cursor)
 
   ZSH_HIGHLIGHT_STYLES[precommand]=fg=green,bold
