@@ -29,7 +29,7 @@ case $1 in
         shift
         curdir=$(pwd -P)
         (cd ~
-         GIT_DIR=$curdir/.git git $*
+         GIT_DIR=$curdir/.git command git "$@"
         )
         ;;
 esac
