@@ -1,5 +1,4 @@
-set -A plugins
-plugins+=(github web-search                                    \
+plugins=(github web-search                                    \
          gpg-agent rsync                                      \
          python pyenv pep8 pylint pip virtualenv fabric       \
          go                                                   \
