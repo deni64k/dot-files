@@ -12,9 +12,8 @@
 (global-set-key [(hyper o)] 'projectile-find-file)
 (global-set-key [(shift hyper f)] 'isearch-backward)
 
-(global-set-key (kbd "H-1") (lambda() (interactive) (find-file "~/Code/me")))
-(global-set-key (kbd "H-2") (lambda() (interactive) (find-file "~/Code/pagefair")))
-(global-set-key (kbd "H-3") (lambda() (interactive) (find-file "~/Code/go/src/github.com/housinganywhere/ha")))
+(global-set-key (kbd "H-1") (lambda() (interactive) (find-file "~/Code/mine")))
+(global-set-key (kbd "H-2") (lambda() (interactive) (find-file "~/Code/arista")))
 (global-set-key (kbd "H-0") (lambda() (interactive) (find-file "~/.emacs.d/init.el")))
 
 ;; go-mode
