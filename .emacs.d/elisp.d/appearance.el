@@ -15,9 +15,15 @@
 
   (el-get-bundle diff-hl)
   (add-hook 'prog-mode-hook 'turn-on-diff-hl-mode)
-  (add-hook 'vc-dir-mode-hook 'turn-on-diff-hl-mode))
+  (add-hook 'vc-dir-mode-hook 'turn-on-diff-hl-mode)
 
-(blink-cursor-mode 0)
+  ;; hide all unneeded stuff
+  (horizontal-scroll-bar-mode 0)
+  (scroll-bar-mode 0)
+  (tool-bar-mode 0)
+  (menu-bar-mode 0)
+
+  (blink-cursor-mode 0))
 
 ;; interpret ansi colors in shell output
 (ignore-errors

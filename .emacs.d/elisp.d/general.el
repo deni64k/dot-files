@@ -52,9 +52,3 @@
 ;; show file size
 (when-available 'size-indication-mode
                 (size-indication-mode t))
-
-;; hide all unneeded stuff
-(scroll-bar-mode 0)
-(horizontal-scroll-bar-mode 0)
-(tool-bar-mode 0)
-(menu-bar-mode 0)

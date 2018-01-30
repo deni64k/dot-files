@@ -20,3 +20,11 @@
 ;; python
 (el-get-bundle python-mode)
 (el-get-bundle pyenv)
+(add-to-list 'auto-mode-alist '("WORKSPACE\\'" . python-mode))
+(add-to-list 'auto-mode-alist '("BUILD\\'" . python-mode))
+(add-to-list 'auto-mode-alist '("\\.bzl\\'" . python-mode))
+
+;; auto completion
+(el-get-bundle company-mode)
+(add-hook 'after-init-hook 'global-company-mode)
+
