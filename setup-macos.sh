@@ -79,6 +79,9 @@ defaults write -g AppleTemperatureUnit -string "Fahrenheit"
 # (e.g. enable Tab in modal dialogs)
 defaults write -g AppleKeyboardUIMode -int 3
 
+# Disable the language icon appearing in input fields in macOS Sonoma
+defaults write kCFPreferencesAnyApplication TSMLanguageIndicatorEnabled 0
+
 # Show All File Extensions
 defaults write -g AppleShowAllExtensions -bool true
 
